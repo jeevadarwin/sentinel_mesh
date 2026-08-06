@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SENTRY — Explainable Security Gateway for AI Agents. Intercepts tool calls, evaluates safety, and explains decisions.">
+    <title>SENTRY — Security Gateway Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ═══ Header ═══════════════════════════════════════════ -->
+    <header class="header">
+        <div class="header-brand">
+            <div class="logo">
+                <div class="logo-shield">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="url(#grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#3b82f6"/><stop offset="100%" style="stop-color:#8b5cf6"/></linearGradient></defs>
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                </div>
+                <h1>SENTRY</h1>
+            </div>
+            <span class="header-subtitle">Explainable Security Gateway</span>
+        </div>
+        <div class="header-status">
+            <div class="status-indicator active"></div>
+            <span>Monitoring</span>
+        </div>
+    </header>
+
+    <!-- ═══ Scenario Launcher Bar ════════════════════════════ -->
+    <section id="panel-scenarios" class="scenario-bar">
+        <span class="scenario-label">Demo Scenarios</span>
+        <div class="scenario-buttons">
+            <button class="scenario-btn" data-scenario="safe_read" id="btn-scenario-safe-read">
+                <span class="scenario-icon">📄</span>
+                <span>Safe Read</span>
+            </button>
+            <button class="scenario-btn" data-scenario="destructive_delete" id="btn-scenario-delete">
+                <span class="scenario-icon">🗑️</span>
+                <span>Delete → Quarantine</span>
+            </button>
+            <button class="scenario-btn" data-scenario="prompt_injection" id="btn-scenario-injection">
+                <span class="scenario-icon">🚫</span>
+                <span>Injection Attack</span>
+            </button>
+            <button class="scenario-btn" data-scenario="dangerous_download" id="btn-scenario-download">
+                <span class="scenario-icon">⬇️</span>
+                <span>Bad Download</span>
+            </button>
+            <button class="scenario-btn" data-scenario="sensitive_email" id="btn-scenario-email">
+                <span class="scenario-icon">✉️</span>
+                <span>Email → Approve</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- ═══ Main Dashboard ═══════════════════════════════════ -->
+    <main class="dashboard">
+
+        <!-- ─── Left Column: Detail Panels ─────────────────── -->
+        <div class="column-left">
+
+            <!-- Current Task -->
+            <section id="panel-task" class="panel">
+                <div class="panel-header">
+                    <span class="panel-icon">🎯</span>
+                    <h2>Current Task</h2>
+                </div>
+                <div class="panel-body">
+                    <p class="task-text" id="task-text">No task active. Run a demo scenario to begin.</p>
+                </div>
+            </section>
+
+            <!-- Proposed Action -->
+            <section id="panel-action" class="panel">
+                <div class="panel-header">
+                    <span class="panel-icon">⚡</span>
+                    <h2>Proposed Action</h2>
+                </div>
+                <div class="panel-body">
+                    <div class="action-display" id="action-display">
+                        <div class="placeholder-text">Waiting for agent action…</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Source / Provenance Labels -->
+            <section id="panel-source" class="panel">
+                <div class="panel-header">
+                    <span class="panel-icon">🔍</span>
+                    <h2>Source / Provenance</h2>
+                </div>
+                <div class="panel-body">
+                    <div id="source-display" class="source-display">
+                        <span class="provenance-badge badge-neutral">—</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Risk Level -->
+            <section id="panel-risk" class="panel">
+                <div class="panel-header">
+                    <span class="panel-icon">⚠️</span>
+                    <h2>Risk Level</h2>
+                </div>
+                <div class="panel-body">
+                    <div id="risk-display" class="risk-display">
+                        <div class="risk-meter">
+                            <div class="risk-fill" id="risk-fill" data-level="none"></div>
+                        </div>
+                        <span class="risk-label" id="risk-label">—</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Verdict & Reason -->
+            <section id="panel-verdict" class="panel panel-verdict-section">
+                <div class="panel-header">
+                    <span class="panel-icon">⚖️</span>
+                    <h2>Verdict</h2>
+                </div>
+                <div class="panel-body">
+                    <div id="verdict-display" class="verdict-display">
+                        <div class="verdict-badge badge-neutral" id="verdict-badge">—</div>
+                        <p class="verdict-reason" id="verdict-reason">
+                            Run a scenario to see the decision engine in action.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Approve / Reject (hidden until ASK_HUMAN) -->
+            <section id="panel-approval" class="panel panel-approval hidden">
+                <div class="panel-header">
+                    <span class="panel-icon">👤</span>
+                    <h2>Human Decision Required</h2>
+                </div>
+                <div class="panel-body">
+                    <p class="approval-prompt" id="approval-prompt">
+                        Review the action above and decide:
+                    </p>
+                    <div class="approval-buttons">
+                        <button class="btn btn-approve" id="btn-approve" disabled>
+                            ✅ Approve
+                        </button>
+                        <button class="btn btn-reject" id="btn-reject" disabled>
+                            ❌ Reject
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ─── Right Column: Timeline & Receipts ──────────── -->
+        <div class="column-right">
+
+            <!-- Live Timeline -->
+            <section id="panel-timeline" class="panel panel-timeline">
+                <div class="panel-header">
+                    <span class="panel-icon">📜</span>
+                    <h2>Live Timeline</h2>
+                </div>
+                <div class="panel-body">
+                    <div id="timeline-list" class="timeline-list">
+                        <div class="placeholder-text">No actions recorded yet.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Action Receipts -->
+            <section id="panel-receipts" class="panel panel-receipts">
+                <div class="panel-header">
+                    <span class="panel-icon">🧾</span>
+                    <h2>Action Receipts</h2>
+                </div>
+                <div class="panel-body">
+                    <div id="receipts-list" class="receipts-list">
+                        <div class="placeholder-text">No completed actions yet.</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- ═══ Footer ═══════════════════════════════════════════ -->
+    <footer class="footer">
+        <span>SENTRY v0.1</span>
+        <span class="footer-dot">·</span>
+        <span>All actions are simulated — no real files, emails, or downloads</span>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
