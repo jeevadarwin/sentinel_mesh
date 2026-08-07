@@ -55,8 +55,8 @@ async def run_containment_agent(
 
     user_prompt = (
         f"Alert Signature: {alert.signature}\n"
-        f"Source IP: {alert.source_ip}:{alert.source_port}\n"
-        f"Destination IP: {alert.dest_ip}:{alert.dest_port}\n"
+        f"Source IP: {alert.source_ip}\n"
+        f"Destination IP: {alert.dest_ip}\n"
         f"Threat Agent Argument: {threat_arg.position}\n"
     )
 

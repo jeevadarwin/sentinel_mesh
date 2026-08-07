@@ -52,10 +52,9 @@ async def run_correlation_agent(alert: Alert) -> CorrelationOutput:
     user_prompt = (
         f"Alert Signature: {alert.signature}\n"
         f"Category: {alert.category}\n"
-        f"Protocol: {alert.protocol}\n"
-        f"Source: {alert.source_ip}:{alert.source_port}\n"
-        f"Destination: {alert.dest_ip}:{alert.dest_port}\n"
-        f"Raw Payload: {alert.raw_payload or 'None'}\n"
+        f"Source IP: {alert.source_ip}\n"
+        f"Destination IP: {alert.dest_ip}\n"
+        f"Raw Log: {getattr(alert, 'raw_log', '')}\n"
     )
 
     sev_str = str(alert.severity).lower().strip()
@@ -71,8 +70,8 @@ async def run_correlation_agent(alert: Alert) -> CorrelationOutput:
 
     parsed = _parse_json(llm_resp.content)
     pattern = parsed.get("pattern_type", "ANOMALOUS_PROTOCOL").upper()
-    summary = parsed.get("correlation_summary", f"Correlated {alert.protocol} traffic on port {alert.dest_port}")
-    matches = parsed.get("telemetry_matches", [f"Matched signature pattern '{alert.signature}'", f"Protocol telemetry over {alert.protocol}"])
+    summary = parsed.get("correlation_summary", f"Correlated network traffic for target {alert.dest_ip}")
+    matches = parsed.get("telemetry_matches", [f"Matched signature pattern '{alert.signature}'", f"Network telemetry observed for {alert.source_ip} -> {alert.dest_ip}"])
 
     return CorrelationOutput(
         alert_id=alert.id,

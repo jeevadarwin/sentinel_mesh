@@ -56,7 +56,7 @@ async def run_business_impact_agent(
 
     user_prompt = (
         f"Alert Signature: {alert.signature}\n"
-        f"Target IP: {alert.dest_ip}:{alert.dest_port}\n"
+        f"Target IP: {alert.dest_ip}\n"
         f"Threat Stance: {threat_arg.position}\n"
         f"Benign Stance: {benign_arg.position}\n"
     )
@@ -74,8 +74,8 @@ async def run_business_impact_agent(
 
     parsed = _parse_json(llm_resp.content)
     impact = parsed.get("impact_severity", "MODERATE" if is_high else "LOW").upper()
-    risk = parsed.get("financial_risk", f"Potential service disruption on port {alert.dest_port} target assets.")
-    assets = parsed.get("affected_assets", [f"Internal Server ({alert.dest_ip})", f"Network Gateway ({alert.protocol})"])
+    risk = parsed.get("financial_risk", f"Potential service disruption for target assets ({alert.dest_ip}).")
+    assets = parsed.get("affected_assets", [f"Internal Server ({alert.dest_ip})", f"Network Asset ({alert.category})"])
     compliance = parsed.get("compliance_risks", ["PCI-DSS Sec 10 (Audit Trail)", "ISO 27001 Sec A.12 (Logging)"])
 
     return BusinessImpactOutput(

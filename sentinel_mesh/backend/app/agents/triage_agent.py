@@ -53,10 +53,9 @@ async def run_triage_agent(alert: Alert) -> TriageOutput:
         f"Alert Signature: {alert.signature}\n"
         f"Severity: {alert.severity}\n"
         f"Category: {alert.category}\n"
-        f"Source IP: {alert.source_ip}:{alert.source_port}\n"
-        f"Destination IP: {alert.dest_ip}:{alert.dest_port}\n"
-        f"Protocol: {alert.protocol}\n"
-        f"Raw Payload: {alert.raw_payload or 'None'}\n"
+        f"Source IP: {alert.source_ip}\n"
+        f"Destination IP: {alert.dest_ip}\n"
+        f"Raw Log: {getattr(alert, 'raw_log', '')}\n"
     )
 
     sev_str = str(alert.severity).lower().strip()
@@ -73,7 +72,7 @@ async def run_triage_agent(alert: Alert) -> TriageOutput:
     parsed = _parse_json(llm_resp.content)
     urgency = parsed.get("urgency_level", "HIGH" if is_high else "MEDIUM").upper()
     summary = parsed.get("triage_summary", f"Initial triage for {alert.signature}")
-    findings = parsed.get("key_findings", [f"Severity level {alert.severity} event detected", f"Target port {alert.dest_port}"])
+    findings = parsed.get("key_findings", [f"Severity level {alert.severity} event detected", f"Destination target {alert.dest_ip}"])
 
     return TriageOutput(
         alert_id=alert.id,
