@@ -567,23 +567,56 @@ async function checkProviderHealth() {
     if (!res.ok) return;
     const data = await res.json();
     
-    setProviderDot("nim", data.nim);
-    setProviderDot("gemini", data.gemini);
-    setProviderDot("lmstudio", data.lmstudio);
-    setProviderDot("ollama", data.ollama);
+    const isCloudOnline = data.nim === "up" || data.gemini === "up";
+
+    // Cloud Providers (NIM & Gemini)
+    setProviderDot("nim", data.nim, "cloud");
+    setProviderDot("gemini", data.gemini, "cloud");
+
+    // Local Providers (LM Studio & Ollama)
+    // When Cloud is online, Local AI is in STANDBY mode. When Cloud is down, Local AI becomes ACTIVE.
+    setProviderDot("lmstudio", data.lmstudio, "local", isCloudOnline);
+    setProviderDot("ollama", data.ollama, "local", isCloudOnline);
   } catch (err) {
     console.warn("checkProviderHealth failed:", err);
   }
 }
 
-function setProviderDot(provider, status) {
+function setProviderDot(provider, status, type, isCloudOnline = false) {
   const dot = document.getElementById(`dot-${provider}`);
   const pill = document.getElementById(`prov-${provider}`);
   if (!dot || !pill) return;
+
   const isUp = status === "up" || status === true || status === "online";
-  dot.className = `prov-dot ${isUp ? "up" : "down"}`;
-  pill.className = `provider-pill ${isUp ? "up" : "down"}`;
-  pill.title = `${provider.toUpperCase()}: ${isUp ? "Online" : "Offline"}`;
+
+  if (type === "cloud") {
+    if (isUp) {
+      dot.className = "prov-dot up";
+      pill.className = "provider-pill up";
+      pill.title = `${provider.toUpperCase()} (Cloud): Online`;
+    } else {
+      dot.className = "prov-dot down";
+      pill.className = "provider-pill down";
+      pill.title = `${provider.toUpperCase()} (Cloud): Offline / Quota`;
+    }
+  } else {
+    // Local AI (LM Studio / Ollama)
+    if (!isUp) {
+      dot.className = "prov-dot down";
+      pill.className = "provider-pill down";
+      pill.title = `${provider.toUpperCase()} (Local): Not Running`;
+    } else if (isCloudOnline) {
+      // Cloud is handling requests -> Local AI is ready in STANDBY
+      dot.className = "prov-dot standby";
+      pill.className = "provider-pill standby";
+      pill.title = `${provider.toUpperCase()} (Local): Air-Gap Standby Ready`;
+    } else {
+      // Cloud is down -> Local AI is ACTIVE handling requests
+      dot.className = "prov-dot active";
+      pill.className = "provider-pill active";
+      pill.title = `${provider.toUpperCase()} (Local): Air-Gap Active Mode`;
+    }
+  }
 }
 
 // ─── MITRE Technique Lookup ──────────────────────────────────────────────────

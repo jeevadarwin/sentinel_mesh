@@ -858,6 +858,29 @@ body {
   background: var(--colour-error);
 }
 
+/* Local Air-Gap Standby (Cloud Online) */
+.prov-dot.standby {
+  background: var(--colour-warning);
+  box-shadow: 0 0 4px rgba(255, 171, 0, 0.4);
+}
+
+.provider-pill.standby {
+  color: var(--colour-warning);
+  border: 1px solid rgba(255, 171, 0, 0.25);
+}
+
+/* Local Air-Gap Active (Cloud Offline) */
+.prov-dot.active {
+  background: var(--colour-success);
+  box-shadow: 0 0 8px rgba(0, 230, 118, 0.8);
+}
+
+.provider-pill.active {
+  color: var(--colour-success);
+  border: 1px solid rgba(0, 230, 118, 0.4);
+  background: rgba(0, 230, 118, 0.08);
+}
+
 /* Investigation Button */
 .investigation-section {
   margin-top: 16px;
