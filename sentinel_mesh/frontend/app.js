@@ -857,28 +857,40 @@ function renderAgentBubble(arg) {
   
   let title = "Specialized Agent";
   let cls = "bubble-threat";
+  let sideBadge = '<span class="agent-side-badge badge-side-threat">🔴 Threat Side</span>';
   
   if (agentName === "triage") {
-    title = "🔍 Triage Agent";
+    title = "🔍 Attack Triage Agent";
     cls = "bubble-triage";
-  } else if (agentName === "threat_intel") {
-    title = "🌐 Threat Intel Agent";
-    cls = "bubble-intel";
-  } else if (agentName === "correlation") {
-    title = "📊 Log Correlation Agent";
-    cls = "bubble-corr";
+    sideBadge = '<span class="agent-side-badge badge-side-threat">🔴 Threat Side</span>';
   } else if (agentName === "threat") {
-    title = "⚡ Threat Agent (Malicious)";
+    title = "⚡ Threat Agent (Malicious Stance)";
     cls = "bubble-threat";
-  } else if (agentName === "benign") {
-    title = "🛡️ Benign Agent (False Alarm)";
-    cls = "bubble-benign";
+    sideBadge = '<span class="agent-side-badge badge-side-threat">🔴 Threat Side</span>';
   } else if (agentName === "business_impact") {
     title = "💼 Business Impact Agent";
     cls = "bubble-impact";
+    sideBadge = '<span class="agent-side-badge badge-side-threat">🔴 Threat Side</span>';
   } else if (agentName === "containment") {
     title = "🚨 Response & Containment Agent";
     cls = "bubble-containment";
+    sideBadge = '<span class="agent-side-badge badge-side-threat">🔴 Threat Side</span>';
+  } else if (agentName === "threat_intel") {
+    title = "🌐 Threat Intel Agent";
+    cls = "bubble-intel";
+    sideBadge = '<span class="agent-side-badge badge-side-benign">🛡️ Benign Side</span>';
+  } else if (agentName === "correlation") {
+    title = "📊 Log Correlation Agent";
+    cls = "bubble-corr";
+    sideBadge = '<span class="agent-side-badge badge-side-benign">🛡️ Benign Side</span>';
+  } else if (agentName === "benign") {
+    title = "🛡️ Benign Agent (False Alarm)";
+    cls = "bubble-benign";
+    sideBadge = '<span class="agent-side-badge badge-side-benign">🛡️ Benign Side</span>';
+  } else if (agentName === "coordinator") {
+    title = "⚖️ SOC Coordinator Agent";
+    cls = "bubble-coordinator";
+    sideBadge = '<span class="agent-side-badge badge-side-benign">🛡️ Benign Side</span>';
   }
 
   const dotsHtml = renderBubbleProviderDots(arg.provider_used);
@@ -898,6 +910,7 @@ function renderAgentBubble(arg) {
     <div class="bubble-header">
       <div class="bubble-title-group">
         <span class="bubble-title">${title}</span>
+        ${sideBadge}
         ${dotsHtml}
       </div>
       <div class="bubble-meta">

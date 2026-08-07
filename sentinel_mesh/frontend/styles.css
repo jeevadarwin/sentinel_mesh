@@ -1553,5 +1553,32 @@ body {
   box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
 }
 
+/* Agent Card Side Badges */
+.agent-side-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+}
+
+.badge-side-threat {
+  background: rgba(255, 23, 68, 0.18);
+  color: #ff5252;
+  border: 1px solid rgba(255, 23, 68, 0.35);
+}
+
+.badge-side-benign {
+  background: rgba(0, 230, 118, 0.18);
+  color: #69f0ae;
+  border: 1px solid rgba(0, 230, 118, 0.35);
+}
+
+.bubble-coordinator {
+  border-left: 4px solid #ffd700;
+  background: rgba(255, 215, 0, 0.08);
+}
+
 
 
