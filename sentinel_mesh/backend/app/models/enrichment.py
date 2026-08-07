@@ -39,6 +39,14 @@ class EnrichmentEvidence(BaseModel):
         ...,
         description="Name of the enrichment provider, e.g. 'AbuseIPDB'.",
     )
+    ip_address: str = Field(
+        default="",
+        description="The IP address that was looked up (source or destination).",
+    )
+    ip_role: str = Field(
+        default="",
+        description="Whether this is the 'source_ip' or 'dest_ip' for this alert.",
+    )
     score: int = Field(
         ...,
         ge=0,

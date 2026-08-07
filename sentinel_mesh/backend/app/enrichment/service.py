@@ -43,6 +43,8 @@ def _private_evidence(alert_id: str, ip: str, role: str) -> EnrichmentEvidence:
     return EnrichmentEvidence(
         alert_id=alert_id,
         source="AbuseIPDB",
+        ip_address=ip,
+        ip_role=role,
         score=0,
         reports_count=0,
         last_reported="",
@@ -51,7 +53,7 @@ def _private_evidence(alert_id: str, ip: str, role: str) -> EnrichmentEvidence:
     )
 
 
-def _result_to_evidence(alert_id: str, result: dict) -> EnrichmentEvidence:
+def _result_to_evidence(alert_id: str, result: dict, ip: str, role: str) -> EnrichmentEvidence:
     """
     Map an AbuseIPDBResult dict → EnrichmentEvidence.
 
@@ -62,6 +64,8 @@ def _result_to_evidence(alert_id: str, result: dict) -> EnrichmentEvidence:
     return EnrichmentEvidence(
         alert_id=alert_id,
         source="AbuseIPDB",
+        ip_address=ip,
+        ip_role=role,
         score=result["abuse_score"],
         reports_count=result["reports_count"],
         last_reported=result["last_reported"],
@@ -102,7 +106,7 @@ async def enrich_alert(alert_id: str) -> list[EnrichmentEvidence]:
     else:
         logger.info("Enriching source_ip=%s for alert %s", src_ip, alert_id)
         raw = await abuseipdb_check(src_ip, api_key)
-        results.append(_result_to_evidence(alert_id, raw))
+        results.append(_result_to_evidence(alert_id, raw, src_ip, "source_ip"))
 
     # --- dest_ip (only if external) ---------------------------------------
     dst_ip = alert.dest_ip
@@ -116,6 +120,6 @@ async def enrich_alert(alert_id: str) -> list[EnrichmentEvidence]:
     else:
         logger.info("Enriching dest_ip=%s for alert %s", dst_ip, alert_id)
         raw = await abuseipdb_check(dst_ip, api_key)
-        results.append(_result_to_evidence(alert_id, raw))
+        results.append(_result_to_evidence(alert_id, raw, dst_ip, "dest_ip"))
 
     return results

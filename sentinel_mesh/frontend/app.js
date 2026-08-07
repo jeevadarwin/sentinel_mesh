@@ -431,7 +431,11 @@ function renderEnrichment(section, evidence) {
     return;
   }
 
-  const rows = evidence.map((ev) => {
+  // Assign Source IP / Destination IP labels based on array order
+  // Backend always emits source_ip evidence first, then dest_ip (if external)
+  const ipRoles = ["Source IP", "Destination IP"];
+
+  const rows = evidence.map((ev, idx) => {
     const scoreClass =
       ev.score >= 75 ? "enrich-score-high" :
       ev.score >= 30 ? "enrich-score-med"  :
@@ -445,8 +449,13 @@ function renderEnrichment(section, evidence) {
       ? `<div class="enrich-limit">${escHtml(ev.limitations)}</div>`
       : "";
 
+    // Show the IP address if available from limitations text, or role label
+    const ipLabel = ipRoles[idx] || `IP ${idx + 1}`;
+    const ipDisplay = ev.ip_address ? `<span class="enrich-ip-addr">${escHtml(ev.ip_address)}</span>` : "";
+
     return `
       <div class="enrich-card">
+        <div class="enrich-ip-role">${ipLabel}${ipDisplay ? " · " + ipDisplay : ""}</div>
         <div class="enrich-header">
           <span class="enrich-source">${escHtml(ev.source)}</span>
           <span class="enrich-score ${scoreClass}">Score: ${ev.score}/100</span>
@@ -657,13 +666,14 @@ async function runInvestigation(alertId) {
       const decision = JSON.parse(e.data);
       const verdictCard = renderVerdictCard(decision);
       verdictSlot.appendChild(verdictCard);
+    } catch (err) {
+      console.warn("Failed to parse verdict:", err);
+    } finally {
+      // Issue 3 fix: ALWAYS reset btn in finally — even if JSON.parse fails
       if (btn) {
         btn.disabled = false;
         btn.innerHTML = `<span class="btn-icon">✓</span> Re-run Investigation`;
       }
-    } catch (err) {
-      console.warn("Failed to parse verdict:", err);
-    } finally {
       sse.close();
       activeDebateSource = null;
     }
