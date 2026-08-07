@@ -436,33 +436,43 @@ function renderEnrichment(section, evidence) {
   const ipRoles = ["Source IP", "Destination IP"];
 
   const rows = evidence.map((ev, idx) => {
-    const scoreClass =
-      ev.score >= 75 ? "enrich-score-high" :
-      ev.score >= 30 ? "enrich-score-med"  :
-                       "enrich-score-low";
+    const isInternal = (ev.limitations || "").includes("internal IP");
+    
+    let scoreBadge = "";
+    if (isInternal) {
+      scoreBadge = `<span class="enrich-score enrich-score-internal">🔒 Internal IP</span>`;
+    } else if (ev.score >= 75) {
+      scoreBadge = `<span class="enrich-score enrich-score-high">🔴 High Risk (${ev.score}/100)</span>`;
+    } else if (ev.score >= 30) {
+      scoreBadge = `<span class="enrich-score enrich-score-med">🟡 Suspicious (${ev.score}/100)</span>`;
+    } else if (ev.score > 0) {
+      scoreBadge = `<span class="enrich-score enrich-score-low">🟢 Low Risk (${ev.score}/100)</span>`;
+    } else {
+      scoreBadge = `<span class="enrich-score enrich-score-clean">✓ CLEAN (0% Threat Risk)</span>`;
+    }
 
     const lastSeen = ev.last_reported
       ? escHtml(ev.last_reported.substring(0, 10))
-      : "never";
+      : "No reports";
 
     const limitNote = ev.limitations
       ? `<div class="enrich-limit">${escHtml(ev.limitations)}</div>`
       : "";
 
-    // Show the IP address if available from limitations text, or role label
-    const ipLabel = ipRoles[idx] || `IP ${idx + 1}`;
+    // Show explicit Role label (Source IP / Destination IP) and IP address
+    const ipRole = ev.ip_role === "source_ip" ? "Source IP" : ev.ip_role === "dest_ip" ? "Destination IP" : (ipRoles[idx] || `IP ${idx + 1}`);
     const ipDisplay = ev.ip_address ? `<span class="enrich-ip-addr">${escHtml(ev.ip_address)}</span>` : "";
 
     return `
       <div class="enrich-card">
-        <div class="enrich-ip-role">${ipLabel}${ipDisplay ? " · " + ipDisplay : ""}</div>
+        <div class="enrich-ip-role">${ipRole}${ipDisplay ? " · " + ipDisplay : ""}</div>
         <div class="enrich-header">
           <span class="enrich-source">${escHtml(ev.source)}</span>
-          <span class="enrich-score ${scoreClass}">Score: ${ev.score}/100</span>
+          ${scoreBadge}
         </div>
         <ul class="enrich-list">
-          <li><span class="detail-key">Reports</span> <span class="detail-val mono">${ev.reports_count}</span></li>
-          <li><span class="detail-key">Last seen</span> <span class="detail-val mono">${lastSeen}</span></li>
+          <li><span class="detail-key">Abuse Reports</span> <span class="detail-val mono">${ev.reports_count}</span></li>
+          <li><span class="detail-key">Last Reported</span> <span class="detail-val mono">${lastSeen}</span></li>
         </ul>
         ${limitNote}
       </div>
