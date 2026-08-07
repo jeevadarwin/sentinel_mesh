@@ -569,54 +569,35 @@ async function checkProviderHealth() {
     
     const isCloudOnline = data.nim === "up" || data.gemini === "up";
 
-    // Cloud Providers (NIM & Gemini)
-    setProviderDot("nim", data.nim, "cloud");
-    setProviderDot("gemini", data.gemini, "cloud");
+    // 1. NVIDIA NIM (Cloud)
+    setProviderDot("nim", data.nim === "up" ? "up" : "down", "NVIDIA NIM (Cloud)");
 
-    // Local Providers (LM Studio & Ollama)
-    // When Cloud is online, Local AI is in STANDBY mode. When Cloud is down, Local AI becomes ACTIVE.
-    setProviderDot("lmstudio", data.lmstudio, "local", isCloudOnline);
-    setProviderDot("ollama", data.ollama, "local", isCloudOnline);
+    // 2. Google Gemini (Cloud)
+    setProviderDot("gemini", data.gemini === "up" ? "up" : "down", "Google Gemini (Cloud)");
+
+    // 3. Local AI (LM Studio / Air-Gap)
+    // When cloud is active -> Local AI is Standby/Off. When cloud is offline -> Local AI turns GREEN (Active)
+    if (!isCloudOnline && data.local === "up") {
+      setProviderDot("local", "up", "Local AI (LM Studio — Air-Gap Active)");
+    } else if (isCloudOnline) {
+      setProviderDot("local", "down", "Local AI (LM Studio — Cloud Standby)");
+    } else {
+      setProviderDot("local", "down", "Local AI (LM Studio — Offline)");
+    }
   } catch (err) {
     console.warn("checkProviderHealth failed:", err);
   }
 }
 
-function setProviderDot(provider, status, type, isCloudOnline = false) {
-  const dot = document.getElementById(`dot-${provider}`);
-  const pill = document.getElementById(`prov-${provider}`);
+function setProviderDot(providerKey, status, titleText) {
+  const dot = document.getElementById(`dot-${providerKey}`);
+  const pill = document.getElementById(`prov-${providerKey}`);
   if (!dot || !pill) return;
 
   const isUp = status === "up" || status === true || status === "online";
-
-  if (type === "cloud") {
-    if (isUp) {
-      dot.className = "prov-dot up";
-      pill.className = "provider-pill up";
-      pill.title = `${provider.toUpperCase()} (Cloud): Online`;
-    } else {
-      dot.className = "prov-dot down";
-      pill.className = "provider-pill down";
-      pill.title = `${provider.toUpperCase()} (Cloud): Offline / Quota`;
-    }
-  } else {
-    // Local AI (LM Studio / Ollama)
-    if (!isUp) {
-      dot.className = "prov-dot down";
-      pill.className = "provider-pill down";
-      pill.title = `${provider.toUpperCase()} (Local): Not Running`;
-    } else if (isCloudOnline) {
-      // Cloud is handling requests -> Local AI is ready in STANDBY
-      dot.className = "prov-dot standby";
-      pill.className = "provider-pill standby";
-      pill.title = `${provider.toUpperCase()} (Local): Air-Gap Standby Ready`;
-    } else {
-      // Cloud is down -> Local AI is ACTIVE handling requests
-      dot.className = "prov-dot active";
-      pill.className = "provider-pill active";
-      pill.title = `${provider.toUpperCase()} (Local): Air-Gap Active Mode`;
-    }
-  }
+  dot.className = `prov-dot ${isUp ? "up" : "down"}`;
+  pill.className = `provider-pill ${isUp ? "up" : "down"}`;
+  pill.title = `${titleText}: ${isUp ? "Online / Active" : "Offline / Standby"}`;
 }
 
 // ─── MITRE Technique Lookup ──────────────────────────────────────────────────

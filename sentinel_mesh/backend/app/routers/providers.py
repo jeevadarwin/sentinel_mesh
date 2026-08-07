@@ -26,6 +26,7 @@ router = APIRouter(prefix="/providers", tags=["providers"])
 class ProvidersHealthResponse(BaseModel):
     nim: str       # "up" or "down"
     gemini: str    # "up" or "down"
+    local: str     # "up" or "down"
     lmstudio: str  # "up" or "down"
     ollama: str    # "up" or "down"
 
@@ -72,7 +73,7 @@ async def _check_ollama() -> str:
 @router.get("/health", response_model=ProvidersHealthResponse)
 async def get_providers_health() -> ProvidersHealthResponse:
     """
-    Pings all four providers (NIM, Gemini, LM Studio, Ollama) and returns up/down status.
+    Pings all providers and returns status for nim, gemini, and local AI (LM Studio/Ollama).
     """
     nim_status, gemini_status, lmstudio_status, ollama_status = await asyncio.gather(
         _check_nim(),
@@ -81,9 +82,12 @@ async def get_providers_health() -> ProvidersHealthResponse:
         _check_ollama(),
     )
 
+    local_status = "up" if (lmstudio_status == "up" or ollama_status == "up") else "down"
+
     return ProvidersHealthResponse(
         nim=nim_status,
         gemini=gemini_status,
+        local=local_status,
         lmstudio=lmstudio_status,
         ollama=ollama_status,
     )
