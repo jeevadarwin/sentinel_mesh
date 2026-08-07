@@ -562,14 +562,16 @@ async function checkProviderHealth() {
   try {
     const res = await fetch(`${BACKEND_URL}/providers/health`, {
       headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(4000),
+      signal: AbortSignal.timeout(1500),
     });
     if (!res.ok) return;
     const data = await res.json();
 
+    // Online Mode: NIM = GREEN, Gemini = GREEN, Local AI = RED
+    // Offline Mode: NIM = RED, Gemini = RED, Local AI = GREEN
     setProviderDot("nim",    data.nim === "up",    "NVIDIA NIM (Cloud 70B)");
     setProviderDot("gemini", data.gemini === "up", "Google Gemini (Cloud)");
-    setProviderDot("local",  data.local === "up",  "Local AI (Ollama/Gemma)");
+    setProviderDot("local",  data.local === "up",  "Local AI (Ollama Air-Gap Active)");
   } catch (err) {
     console.warn("checkProviderHealth failed:", err);
   }
@@ -582,7 +584,7 @@ function setProviderDot(providerKey, isActive, titleText) {
 
   dot.className = `prov-dot ${isActive ? "up" : "down"}`;
   pill.className = `provider-pill ${isActive ? "up" : "down"}`;
-  pill.title = `${titleText}: ${isActive ? "Online / Ready" : "Offline / Standby"}`;
+  pill.title = `${titleText}: ${isActive ? "Online / Active" : "Offline / Standby"}`;
 }
 
 // ─── MITRE Technique Lookup ──────────────────────────────────────────────────
@@ -874,7 +876,7 @@ function init() {
 
   // Phase 4: provider health check
   checkProviderHealth();
-  setInterval(checkProviderHealth, 10000);
+  setInterval(checkProviderHealth, 1500);
 
   // Phase 2: fetch existing alerts
   fetchAlerts();
