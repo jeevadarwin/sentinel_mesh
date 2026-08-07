@@ -1,25 +1,5 @@
 """
-agent_output.py — AgentArgument schema (Phase 1 scaffold).
-
-Represents the structured argument produced by one debate agent
-(either the "threat" or "benign" side).  The coordinator consumes a
-list of these in Phase 2 to reach a verdict.
-
-Example:
-    from app.models.agent_output import AgentArgument
-
-    arg = AgentArgument(
-        agent_name="threat",
-        alert_id="alert-001",
-        position="This alert represents a genuine port-scan threat.",
-        supporting_points=[
-            "Source IP has AbuseIPDB score of 87.",
-            "Signature matches known Nmap SYN-scan pattern.",
-        ],
-        confidence=0.82,
-        mitre_technique="T1046",  # Network Service Discovery
-    )
-    print(arg.model_dump_json(indent=2))
+agent_output.py — Output schemas for all 8 Agents in Sentinel Mesh.
 """
 
 from typing import Literal, Optional
@@ -27,14 +7,11 @@ from pydantic import BaseModel, Field
 
 
 class AgentArgument(BaseModel):
-    """
-    The structured argument output by one debate agent.
-    agent_name is constrained to "threat" or "benign" for the two-sided debate.
-    """
+    """The structured argument output by Threat Agent or Benign Agent."""
 
-    agent_name: Literal["threat", "benign"] = Field(
+    agent_name: str = Field(
         ...,
-        description="Which agent produced this argument.",
+        description="Which agent produced this argument, e.g. 'threat', 'benign', 'triage', 'threat_intel', 'correlation', 'business_impact', 'containment'.",
     )
     alert_id: str = Field(
         ...,
@@ -42,17 +19,17 @@ class AgentArgument(BaseModel):
     )
     position: str = Field(
         ...,
-        description="One-sentence summary of the agent's stance.",
+        description="One-sentence summary of the agent's stance/finding.",
     )
     supporting_points: list[str] = Field(
         default_factory=list,
         description="Ordered list of evidence points supporting the position.",
     )
     confidence: float = Field(
-        ...,
+        default=0.8,
         ge=0.0,
         le=1.0,
-        description="Agent's self-assessed confidence in its position (0.0–1.0).",
+        description="Agent's self-assessed confidence (0.0–1.0).",
     )
     mitre_technique: Optional[str] = Field(
         default=None,
@@ -60,17 +37,51 @@ class AgentArgument(BaseModel):
     )
     provider_used: Optional[str] = Field(
         default=None,
-        description="LLM provider that generated this argument ('nim', 'lmstudio', 'ollama').",
+        description="LLM provider that generated this output ('groq', 'gemini', 'nim', 'ollama').",
     )
 
-    model_config = {"json_schema_extra": {"example": {
-        "agent_name": "threat",
-        "alert_id": "alert-001",
-        "position": "This alert represents a genuine port-scan threat.",
-        "supporting_points": [
-            "Source IP has AbuseIPDB score of 87.",
-            "Signature matches known Nmap SYN-scan pattern.",
-        ],
-        "confidence": 0.82,
-        "mitre_technique": "T1046",
-    }}}
+
+class TriageOutput(BaseModel):
+    alert_id: str
+    urgency_level: str  # HIGH, MEDIUM, LOW
+    triage_summary: str
+    key_findings: list[str]
+    confidence: float = 0.85
+    provider_used: Optional[str] = None
+
+
+class ThreatIntelOutput(BaseModel):
+    alert_id: str
+    threat_level: str  # CRITICAL, HIGH, SUSPICIOUS, CLEAN
+    reputation_summary: str
+    ioc_insights: list[str]
+    confidence: float = 0.85
+    provider_used: Optional[str] = None
+
+
+class CorrelationOutput(BaseModel):
+    alert_id: str
+    pattern_type: str  # REPETITIVE_SCAN, PORT_SWEEP, ANOMALOUS_PROTOCOL, ISOLATED_EVENT
+    correlation_summary: str
+    telemetry_matches: list[str]
+    confidence: float = 0.85
+    provider_used: Optional[str] = None
+
+
+class BusinessImpactOutput(BaseModel):
+    alert_id: str
+    impact_severity: str  # SEVERE, MODERATE, LOW
+    financial_risk: str
+    affected_assets: list[str]
+    compliance_risks: list[str]
+    confidence: float = 0.85
+    provider_used: Optional[str] = None
+
+
+class ContainmentOutput(BaseModel):
+    alert_id: str
+    action_type: str  # ISOLATE_HOST, BLOCK_IP, REVOKE_SESSION, MONITOR
+    action_summary: str
+    containment_steps: list[str]
+    confidence: float = 0.85
+    provider_used: Optional[str] = None

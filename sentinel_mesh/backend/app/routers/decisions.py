@@ -146,11 +146,29 @@ async def stream_alert_debate(alert_id: str):
             yield f"event: verdict\ndata: {cached_verdict.model_dump_json()}\n\n"
             return
 
-        # Cache miss: run pipeline and stream events in order
+        # Cache miss: run 8-Agent Mesh pipeline in 4 parallel stages and stream events
         try:
+            from app.agents.triage_agent import run_triage_agent
+            from app.agents.threat_intel_agent import run_threat_intel_agent
+            from app.agents.correlation_agent import run_correlation_agent
+            from app.agents.business_impact_agent import run_business_impact_agent
+            from app.agents.containment_agent import run_containment_agent
+
             enrichment = await enrich_alert(alert_id)
             t0 = time.monotonic()
 
+            # STAGE 1: Parallel Intel & Analysis (Triage, Threat Intel, Correlation)
+            triage_task = asyncio.create_task(run_triage_agent(alert))
+            intel_task = asyncio.create_task(run_threat_intel_agent(alert, enrichment))
+            correlation_task = asyncio.create_task(run_correlation_agent(alert))
+
+            triage_out, intel_out, corr_out = await asyncio.gather(triage_task, intel_task, correlation_task)
+
+            yield f"event: triage\ndata: {triage_out.model_dump_json()}\n\n"
+            yield f"event: threat_intel\ndata: {intel_out.model_dump_json()}\n\n"
+            yield f"event: correlation\ndata: {corr_out.model_dump_json()}\n\n"
+
+            # STAGE 2: Parallel Adversarial Debate (Threat Agent vs Benign Agent)
             threat_task = asyncio.create_task(build_threat_argument(alert, enrichment))
             benign_task = asyncio.create_task(build_benign_argument(alert, enrichment))
 
@@ -159,6 +177,16 @@ async def stream_alert_debate(alert_id: str):
             yield f"event: threat_argument\ndata: {threat_arg.model_dump_json()}\n\n"
             yield f"event: benign_argument\ndata: {benign_arg.model_dump_json()}\n\n"
 
+            # STAGE 3: Parallel Impact & Containment (Business Impact Agent, Containment Agent)
+            impact_task = asyncio.create_task(run_business_impact_agent(alert, threat_arg, benign_arg))
+            containment_task = asyncio.create_task(run_containment_agent(alert, threat_arg, benign_arg))
+
+            impact_out, containment_out = await asyncio.gather(impact_task, containment_task)
+
+            yield f"event: business_impact\ndata: {impact_out.model_dump_json()}\n\n"
+            yield f"event: containment\ndata: {containment_out.model_dump_json()}\n\n"
+
+            # STAGE 4: Master Verdict Synthesis (SOC Coordinator)
             decision = await decide(alert, threat_arg, benign_arg, enrichment)
             pipeline_latency = (time.monotonic() - t0) * 1000
             decision.latency_ms = round(pipeline_latency, 2)

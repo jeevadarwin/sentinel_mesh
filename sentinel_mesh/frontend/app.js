@@ -625,14 +625,14 @@ async function runInvestigation(alertId) {
 
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = `<span class="btn-icon">⌛</span> Debating…`;
+    btn.innerHTML = `<span class="btn-icon">⌛</span> Orchestrating 8-Agent Mesh…`;
   }
 
   container.style.display = "block";
   container.innerHTML = `
-    <div class="debate-header-label">AGENT DEBATE</div>
+    <div class="debate-header-label">AUTONOMOUS 8-AGENT SOC MESH INVESTIGATION</div>
     <div class="debate-bubbles-grid" id="debate-bubbles-grid">
-      <div class="debate-loading">Synthesizing multi-agent debate stream…</div>
+      <div class="debate-loading">Synthesizing 8 specialized agent streams…</div>
     </div>
     <div id="verdict-slot"></div>
   `;
@@ -649,28 +649,91 @@ async function runInvestigation(alertId) {
   const sse = new EventSource(sseUrl);
   activeDebateSource = sse;
 
+  // Stage 1 SSE Events
+  sse.addEventListener("triage", (e) => {
+    try {
+      const data = JSON.parse(e.data);
+      const loading = bubblesGrid.querySelector(".debate-loading");
+      if (loading) loading.remove();
+      bubblesGrid.appendChild(renderAgentBubble({
+        agent_name: "triage",
+        position: `Urgency: ${data.urgency_level} — ${data.triage_summary}`,
+        supporting_points: data.key_findings,
+        confidence: data.confidence,
+        provider_used: data.provider_used,
+      }));
+    } catch (err) { console.warn("Triage parse error:", err); }
+  });
+
+  sse.addEventListener("threat_intel", (e) => {
+    try {
+      const data = JSON.parse(e.data);
+      bubblesGrid.appendChild(renderAgentBubble({
+        agent_name: "threat_intel",
+        position: `Threat Level: ${data.threat_level} — ${data.reputation_summary}`,
+        supporting_points: data.ioc_insights,
+        confidence: data.confidence,
+        provider_used: data.provider_used,
+      }));
+    } catch (err) { console.warn("Threat Intel parse error:", err); }
+  });
+
+  sse.addEventListener("correlation", (e) => {
+    try {
+      const data = JSON.parse(e.data);
+      bubblesGrid.appendChild(renderAgentBubble({
+        agent_name: "correlation",
+        position: `Pattern: ${data.pattern_type} — ${data.correlation_summary}`,
+        supporting_points: data.telemetry_matches,
+        confidence: data.confidence,
+        provider_used: data.provider_used,
+      }));
+    } catch (err) { console.warn("Correlation parse error:", err); }
+  });
+
+  // Stage 2 SSE Events
   sse.addEventListener("threat_argument", (e) => {
     try {
       const arg = JSON.parse(e.data);
-      const loading = bubblesGrid.querySelector(".debate-loading");
-      if (loading) loading.remove();
       bubblesGrid.appendChild(renderAgentBubble(arg));
-    } catch (err) {
-      console.warn("Failed to parse threat_argument:", err);
-    }
+    } catch (err) { console.warn("Threat arg parse error:", err); }
   });
 
   sse.addEventListener("benign_argument", (e) => {
     try {
       const arg = JSON.parse(e.data);
-      const loading = bubblesGrid.querySelector(".debate-loading");
-      if (loading) loading.remove();
       bubblesGrid.appendChild(renderAgentBubble(arg));
-    } catch (err) {
-      console.warn("Failed to parse benign_argument:", err);
-    }
+    } catch (err) { console.warn("Benign arg parse error:", err); }
   });
 
+  // Stage 3 SSE Events
+  sse.addEventListener("business_impact", (e) => {
+    try {
+      const data = JSON.parse(e.data);
+      bubblesGrid.appendChild(renderAgentBubble({
+        agent_name: "business_impact",
+        position: `Risk Severity: ${data.impact_severity} — ${data.financial_risk}`,
+        supporting_points: [...data.affected_assets, ...data.compliance_risks],
+        confidence: data.confidence,
+        provider_used: data.provider_used,
+      }));
+    } catch (err) { console.warn("Business impact parse error:", err); }
+  });
+
+  sse.addEventListener("containment", (e) => {
+    try {
+      const data = JSON.parse(e.data);
+      bubblesGrid.appendChild(renderAgentBubble({
+        agent_name: "containment",
+        position: `Action: ${data.action_type} — ${data.action_summary}`,
+        supporting_points: data.containment_steps,
+        confidence: data.confidence,
+        provider_used: data.provider_used,
+      }));
+    } catch (err) { console.warn("Containment parse error:", err); }
+  });
+
+  // Stage 4 Verdict SSE Event
   sse.addEventListener("verdict", (e) => {
     try {
       const decision = JSON.parse(e.data);
@@ -679,10 +742,9 @@ async function runInvestigation(alertId) {
     } catch (err) {
       console.warn("Failed to parse verdict:", err);
     } finally {
-      // Issue 3 fix: ALWAYS reset btn in finally — even if JSON.parse fails
       if (btn) {
         btn.disabled = false;
-        btn.innerHTML = `<span class="btn-icon">✓</span> Re-run Investigation`;
+        btn.innerHTML = `<span class="btn-icon">✓</span> Re-run 8-Agent Investigation`;
       }
       sse.close();
       activeDebateSource = null;
@@ -697,7 +759,7 @@ async function runInvestigation(alertId) {
     if (!verdictSlot.querySelector(".verdict-card") && !container.querySelector(".debate-error")) {
       const errEl = document.createElement("div");
       errEl.className = "debate-error";
-      errEl.textContent = "Debate stream error: LLM providers unavailable or request timed out.";
+      errEl.textContent = "8-Agent Mesh stream error: LLM providers unavailable or request timed out.";
       container.appendChild(errEl);
     }
 
@@ -708,6 +770,65 @@ async function runInvestigation(alertId) {
     sse.close();
     activeDebateSource = null;
   });
+}
+
+function renderAgentBubble(arg) {
+  const agentName = (arg.agent_name || "agent").toLowerCase();
+  
+  let title = "Specialized Agent";
+  let cls = "bubble-threat";
+  
+  if (agentName === "triage") {
+    title = "🔍 Triage Agent";
+    cls = "bubble-triage";
+  } else if (agentName === "threat_intel") {
+    title = "🌐 Threat Intel Agent";
+    cls = "bubble-intel";
+  } else if (agentName === "correlation") {
+    title = "📊 Log Correlation Agent";
+    cls = "bubble-corr";
+  } else if (agentName === "threat") {
+    title = "⚡ Threat Agent (Malicious)";
+    cls = "bubble-threat";
+  } else if (agentName === "benign") {
+    title = "🛡️ Benign Agent (Legitimate)";
+    cls = "bubble-benign";
+  } else if (agentName === "business_impact") {
+    title = "💼 Business Impact Agent";
+    cls = "bubble-impact";
+  } else if (agentName === "containment") {
+    title = "🚨 Response & Containment Agent";
+    cls = "bubble-containment";
+  }
+
+  const dotsHtml = renderBubbleProviderDots(arg.provider_used);
+
+  const pointsList = (arg.supporting_points || [])
+    .map((p) => `<li>${escHtml(p)}</li>`)
+    .join("");
+
+  const mitreText = arg.mitre_technique ? (MITRE_LABELS[arg.mitre_technique] || `MITRE ${arg.mitre_technique}`) : "";
+  const mitreTag = mitreText
+    ? `<span class="mitre-tag">${escHtml(mitreText)}</span>`
+    : "";
+
+  const card = document.createElement("div");
+  card.className = `agent-bubble ${cls}`;
+  card.innerHTML = `
+    <div class="bubble-header">
+      <div class="bubble-title-group">
+        <span class="bubble-title">${title}</span>
+        ${dotsHtml}
+      </div>
+      <div class="bubble-meta">
+        ${mitreTag}
+        <span class="conf-badge">Conf: ${Math.round((arg.confidence || 0.8) * 100)}%</span>
+      </div>
+    </div>
+    <div class="bubble-position">${escHtml(arg.position)}</div>
+    <ul class="bubble-points">${pointsList}</ul>
+  `;
+  return card;
 }
 
 function renderBubbleProviderDots(providerUsed) {
