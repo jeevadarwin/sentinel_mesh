@@ -631,14 +631,64 @@ async function runInvestigation(alertId) {
   container.style.display = "block";
   container.innerHTML = `
     <div class="debate-header-label">AUTONOMOUS 8-AGENT SOC MESH INVESTIGATION</div>
-    <div class="debate-bubbles-grid" id="debate-bubbles-grid">
-      <div class="debate-loading">Synthesizing 8 specialized agent streams…</div>
+
+    <!-- 2-Column Side-by-Side Hero Summaries -->
+    <div class="mesh-summary-grid">
+      <div class="mesh-summary-card card-threat" id="summary-card-threat">
+        <div class="summary-card-header">
+          <span class="summary-title">⚡ THREAT CASE (Actual Attack Vector)</span>
+          <span class="summary-badge badge-threat" id="threat-badge">Analyzing...</span>
+        </div>
+        <div class="summary-body" id="summary-threat-body">
+          <p class="summary-loading">Synthesizing threat evidence...</p>
+        </div>
+      </div>
+
+      <div class="mesh-summary-card card-benign" id="summary-card-benign">
+        <div class="summary-card-header">
+          <span class="summary-title">🛡️ BENIGN CASE (False Alarm / Baseline)</span>
+          <span class="summary-badge badge-benign" id="benign-badge">Analyzing...</span>
+        </div>
+        <div class="summary-body" id="summary-benign-body">
+          <p class="summary-loading">Synthesizing benign baseline evidence...</p>
+        </div>
+      </div>
     </div>
+
+    <!-- Master Verdict Slot -->
     <div id="verdict-slot"></div>
+
+    <!-- Expandable Detailed 8-Agent Drawer Toggle -->
+    <div class="toggle-drawer-wrapper">
+      <button class="btn-toggle-drawer" id="btn-toggle-drawer">
+        ▼ Expand All 8 Specialized Agent Cards
+      </button>
+    </div>
+
+    <div class="debate-bubbles-grid" id="debate-bubbles-grid" style="display: none;"></div>
   `;
 
   const bubblesGrid = container.querySelector("#debate-bubbles-grid");
   const verdictSlot = container.querySelector("#verdict-slot");
+  const threatBody = container.querySelector("#summary-threat-body");
+  const benignBody = container.querySelector("#summary-benign-body");
+  const threatBadge = container.querySelector("#threat-badge");
+  const benignBadge = container.querySelector("#benign-badge");
+  const toggleBtn = container.querySelector("#btn-toggle-drawer");
+
+  let threatPoints = [];
+  let benignPoints = [];
+
+  // Toggle detailed drawer on button or summary card click
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", () => {
+      const isHidden = bubblesGrid.style.display === "none";
+      bubblesGrid.style.display = isHidden ? "grid" : "none";
+      toggleBtn.innerHTML = isHidden
+        ? "▲ Collapse Detailed Agent Cards"
+        : "▼ Expand All 8 Specialized Agent Cards";
+    });
+  }
 
   if (activeDebateSource) {
     activeDebateSource.close();
@@ -653,8 +703,11 @@ async function runInvestigation(alertId) {
   sse.addEventListener("triage", (e) => {
     try {
       const data = JSON.parse(e.data);
-      const loading = bubblesGrid.querySelector(".debate-loading");
-      if (loading) loading.remove();
+      threatBadge.textContent = `Urgency: ${data.urgency_level}`;
+      threatPoints.push(`Urgency Rating: ${data.urgency_level} (${data.triage_summary})`);
+      (data.key_findings || []).forEach(f => threatPoints.push(f));
+      renderSummaryLists(threatBody, threatPoints, benignBody, benignPoints);
+
       bubblesGrid.appendChild(renderAgentBubble({
         agent_name: "triage",
         position: `Urgency: ${data.urgency_level} — ${data.triage_summary}`,
@@ -668,6 +721,11 @@ async function runInvestigation(alertId) {
   sse.addEventListener("threat_intel", (e) => {
     try {
       const data = JSON.parse(e.data);
+      benignBadge.textContent = `Threat Level: ${data.threat_level}`;
+      benignPoints.push(`IOC Level: ${data.threat_level} (${data.reputation_summary})`);
+      (data.ioc_insights || []).forEach(i => benignPoints.push(i));
+      renderSummaryLists(threatBody, threatPoints, benignBody, benignPoints);
+
       bubblesGrid.appendChild(renderAgentBubble({
         agent_name: "threat_intel",
         position: `Threat Level: ${data.threat_level} — ${data.reputation_summary}`,
@@ -681,6 +739,10 @@ async function runInvestigation(alertId) {
   sse.addEventListener("correlation", (e) => {
     try {
       const data = JSON.parse(e.data);
+      benignPoints.push(`Telemetry Pattern: ${data.pattern_type} (${data.correlation_summary})`);
+      (data.telemetry_matches || []).forEach(m => benignPoints.push(m));
+      renderSummaryLists(threatBody, threatPoints, benignBody, benignPoints);
+
       bubblesGrid.appendChild(renderAgentBubble({
         agent_name: "correlation",
         position: `Pattern: ${data.pattern_type} — ${data.correlation_summary}`,
@@ -695,6 +757,10 @@ async function runInvestigation(alertId) {
   sse.addEventListener("threat_argument", (e) => {
     try {
       const arg = JSON.parse(e.data);
+      threatPoints.push(`Attack Vector: ${arg.position}`);
+      (arg.supporting_points || []).forEach(p => threatPoints.push(p));
+      renderSummaryLists(threatBody, threatPoints, benignBody, benignPoints);
+
       bubblesGrid.appendChild(renderAgentBubble(arg));
     } catch (err) { console.warn("Threat arg parse error:", err); }
   });
@@ -702,6 +768,10 @@ async function runInvestigation(alertId) {
   sse.addEventListener("benign_argument", (e) => {
     try {
       const arg = JSON.parse(e.data);
+      benignPoints.push(`False Positive Argument: ${arg.position}`);
+      (arg.supporting_points || []).forEach(p => benignPoints.push(p));
+      renderSummaryLists(threatBody, threatPoints, benignBody, benignPoints);
+
       bubblesGrid.appendChild(renderAgentBubble(arg));
     } catch (err) { console.warn("Benign arg parse error:", err); }
   });
@@ -710,6 +780,10 @@ async function runInvestigation(alertId) {
   sse.addEventListener("business_impact", (e) => {
     try {
       const data = JSON.parse(e.data);
+      threatPoints.push(`Business Exposure: ${data.impact_severity} (${data.financial_risk})`);
+      (data.compliance_risks || []).forEach(c => threatPoints.push(`Compliance Risk: ${c}`));
+      renderSummaryLists(threatBody, threatPoints, benignBody, benignPoints);
+
       bubblesGrid.appendChild(renderAgentBubble({
         agent_name: "business_impact",
         position: `Risk Severity: ${data.impact_severity} — ${data.financial_risk}`,
@@ -723,6 +797,9 @@ async function runInvestigation(alertId) {
   sse.addEventListener("containment", (e) => {
     try {
       const data = JSON.parse(e.data);
+      threatPoints.push(`Containment Action: ${data.action_type} (${data.action_summary})`);
+      renderSummaryLists(threatBody, threatPoints, benignBody, benignPoints);
+
       bubblesGrid.appendChild(renderAgentBubble({
         agent_name: "containment",
         position: `Action: ${data.action_type} — ${data.action_summary}`,
@@ -753,9 +830,6 @@ async function runInvestigation(alertId) {
 
   sse.addEventListener("error", (e) => {
     console.warn("[Debate SSE Error]", e);
-    const loading = bubblesGrid.querySelector(".debate-loading");
-    if (loading) loading.remove();
-    
     if (!verdictSlot.querySelector(".verdict-card") && !container.querySelector(".debate-error")) {
       const errEl = document.createElement("div");
       errEl.className = "debate-error";
@@ -770,6 +844,15 @@ async function runInvestigation(alertId) {
     sse.close();
     activeDebateSource = null;
   });
+}
+
+function renderSummaryLists(tBody, tPoints, bBody, bPoints) {
+  if (tPoints.length > 0) {
+    tBody.innerHTML = `<ul class="summary-list">${tPoints.map(p => `<li>${escHtml(p)}</li>`).join("")}</ul>`;
+  }
+  if (bPoints.length > 0) {
+    bBody.innerHTML = `<ul class="summary-list">${bPoints.map(p => `<li>${escHtml(p)}</li>`).join("")}</ul>`;
+  }
 }
 
 function renderAgentBubble(arg) {
@@ -791,7 +874,7 @@ function renderAgentBubble(arg) {
     title = "⚡ Threat Agent (Malicious)";
     cls = "bubble-threat";
   } else if (agentName === "benign") {
-    title = "🛡️ Benign Agent (Legitimate)";
+    title = "🛡️ Benign Agent (False Alarm)";
     cls = "bubble-benign";
   } else if (agentName === "business_impact") {
     title = "💼 Business Impact Agent";
