@@ -104,7 +104,7 @@ async def decide(
     sev_str = str(alert.severity).lower().strip()
     is_high_critical = sev_str in ("4", "5", "high", "critical") or (sev_str.isdigit() and int(sev_str) >= 4)
     coord_chain = (
-        ["nim", "groq", "ollama"] if is_high_critical
+        ["groq", "gemini", "ollama"] if is_high_critical
         else ["gemini", "groq", "ollama"]
     )
     llm_resp = await get_llm_response(

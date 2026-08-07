@@ -69,7 +69,7 @@ def _get_provider_chain_for_severity(severity: Any) -> list[str]:
         is_high_critical = True
 
     if is_high_critical:
-        return ["nim", "groq", "ollama"]
+        return ["groq", "gemini", "ollama"]
     else:
         return ["gemini", "groq", "ollama"]
 
