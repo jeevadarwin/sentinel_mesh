@@ -566,38 +566,26 @@ async function checkProviderHealth() {
     });
     if (!res.ok) return;
     const data = await res.json();
-    
-    const isCloudOnline = data.nim === "up" || data.gemini === "up";
 
-    // 1. NVIDIA NIM (Cloud)
-    setProviderDot("nim", data.nim === "up" ? "up" : "down", "NVIDIA NIM (Cloud)");
+    const active = data.active_cloud; // "nim" | "gemini" | "local" | "none"
 
-    // 2. Google Gemini (Cloud)
-    setProviderDot("gemini", data.gemini === "up" ? "up" : "down", "Google Gemini (Cloud)");
-
-    // 3. Local AI (LM Studio / Air-Gap)
-    // When cloud is active -> Local AI is Standby/Off. When cloud is offline -> Local AI turns GREEN (Active)
-    if (!isCloudOnline && data.local === "up") {
-      setProviderDot("local", "up", "Local AI (LM Studio — Air-Gap Active)");
-    } else if (isCloudOnline) {
-      setProviderDot("local", "down", "Local AI (LM Studio — Cloud Standby)");
-    } else {
-      setProviderDot("local", "down", "Local AI (LM Studio — Offline)");
-    }
+    // Only the single active handling provider gets GREEN, others are RED
+    setProviderDot("nim",    active === "nim",    "NVIDIA NIM — Active (Handling High/Critical Severity)");
+    setProviderDot("gemini", active === "gemini", "Google Gemini — Active (Handling Low/Medium Severity)");
+    setProviderDot("local",  active === "local",  "Local AI (LM Studio) — Air-Gap Active");
   } catch (err) {
     console.warn("checkProviderHealth failed:", err);
   }
 }
 
-function setProviderDot(providerKey, status, titleText) {
+function setProviderDot(providerKey, isActive, titleText) {
   const dot = document.getElementById(`dot-${providerKey}`);
   const pill = document.getElementById(`prov-${providerKey}`);
   if (!dot || !pill) return;
 
-  const isUp = status === "up" || status === true || status === "online";
-  dot.className = `prov-dot ${isUp ? "up" : "down"}`;
-  pill.className = `provider-pill ${isUp ? "up" : "down"}`;
-  pill.title = `${titleText}: ${isUp ? "Online / Active" : "Offline / Standby"}`;
+  dot.className = `prov-dot ${isActive ? "up" : "down"}`;
+  pill.className = `provider-pill ${isActive ? "up" : "down"}`;
+  pill.title = titleText;
 }
 
 // ─── MITRE Technique Lookup ──────────────────────────────────────────────────

@@ -29,6 +29,7 @@ class ProvidersHealthResponse(BaseModel):
     local: str     # "up" or "down"
     lmstudio: str  # "up" or "down"
     ollama: str    # "up" or "down"
+    active_cloud: str  # "nim" | "gemini" | "local" | "none"
 
 
 async def _check_nim() -> str:
@@ -84,10 +85,22 @@ async def get_providers_health() -> ProvidersHealthResponse:
 
     local_status = "up" if (lmstudio_status == "up" or ollama_status == "up") else "down"
 
+    # Determine which provider is actively handling requests:
+    # NIM takes priority (handles HIGH/CRITICAL). Gemini handles LOW/MEDIUM. Local is last resort.
+    if nim_status == "up":
+        active_cloud = "nim"
+    elif gemini_status == "up":
+        active_cloud = "gemini"
+    elif local_status == "up":
+        active_cloud = "local"
+    else:
+        active_cloud = "none"
+
     return ProvidersHealthResponse(
         nim=nim_status,
         gemini=gemini_status,
         local=local_status,
         lmstudio=lmstudio_status,
         ollama=ollama_status,
+        active_cloud=active_cloud,
     )

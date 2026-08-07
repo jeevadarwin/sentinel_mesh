@@ -51,12 +51,28 @@ def _parse_json_response(content: str) -> dict[str, Any]:
     }
 
 
+def _get_provider_chain_for_severity(severity: int) -> list[str]:
+    """
+    Route to NIM for HIGH/CRITICAL alerts (severity 4-5).
+    Route to Gemini for LOW/MEDIUM alerts (severity 1-3).
+    Always fall back to Local AI when cloud is unavailable.
+    """
+    if severity >= 4:
+        # HIGH / CRITICAL → NIM (70B model, maximum accuracy)
+        return ["nim", "lmstudio", "ollama"]
+    else:
+        # LOW / MEDIUM → Gemini (fast, efficient)
+        return ["gemini", "nim", "lmstudio", "ollama"]
+
+
 async def build_threat_argument(
     alert: Alert,
     enrichment: list[EnrichmentEvidence],
 ) -> AgentArgument:
     """
     Construct an AgentArgument arguing that this alert is a TRUE_POSITIVE threat.
+    Routes to NIM for HIGH/CRITICAL (severity 4-5) or Gemini for LOW/MEDIUM (severity 1-3).
+    Falls back to Local AI when cloud is unavailable.
     """
     enrichment_summary = []
     for e in enrichment:
@@ -91,10 +107,15 @@ async def build_threat_argument(
         "Formulate your Threat Argument now in JSON."
     )
 
+    provider_chain = _get_provider_chain_for_severity(alert.severity)
+    logger.info(
+        "Threat Agent routing severity=%d to chain=%s", alert.severity, provider_chain
+    )
     llm_resp = await get_llm_response(
         prompt=user_prompt,
         system_prompt=system_prompt,
         response_format="json",
+        provider_chain=provider_chain,
     )
 
     parsed = _parse_json_response(llm_resp.content)

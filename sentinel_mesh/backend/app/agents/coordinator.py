@@ -100,10 +100,16 @@ async def decide(
         "Render your final decision in JSON now."
     )
 
+    # Coordinator uses the highest-accuracy model matching the alert severity
+    coord_chain = (
+        ["nim", "lmstudio", "ollama"] if alert.severity >= 4
+        else ["gemini", "nim", "lmstudio", "ollama"]
+    )
     llm_resp = await get_llm_response(
         prompt=user_prompt,
         system_prompt=system_prompt,
         response_format="json",
+        provider_chain=coord_chain,
     )
 
     parsed = _parse_json_response(llm_resp.content)

@@ -86,11 +86,17 @@ async def build_benign_argument(
         "Formulate your Benign Argument now in JSON."
     )
 
+    # Benign Agent uses same severity-based routing as Threat Agent
+    # HIGH/CRITICAL → NIM for strong counter-argument; LOW/MEDIUM → Gemini for quick analysis
+    provider_chain = (
+        ["nim", "lmstudio", "ollama"] if alert.severity >= 4
+        else ["gemini", "nim", "lmstudio", "ollama"]
+    )
     llm_resp = await get_llm_response(
         prompt=user_prompt,
         system_prompt=system_prompt,
         response_format="json",
-        provider_chain=["gemini", "nim", "lmstudio", "ollama"],
+        provider_chain=provider_chain,
     )
 
     parsed = _parse_json_response(llm_resp.content)
