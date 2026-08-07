@@ -31,7 +31,6 @@ import httpx
 
 from app.llm.nim_client import call_nim
 from app.llm.gemini_client import call_gemini
-from app.llm.lmstudio_client import call_lmstudio
 from app.llm.ollama_client import call_ollama
 
 logger = logging.getLogger(__name__)
@@ -52,7 +51,7 @@ class LLMResponse:
     """The text reply from the model."""
 
     provider_used: str
-    """Which provider answered: 'nim', 'gemini', 'lmstudio', or 'ollama'."""
+    """Which provider answered: 'nim', 'gemini', or 'ollama'."""
 
     latency_ms: float
     """End-to-end round-trip time in milliseconds."""
@@ -83,13 +82,14 @@ async def get_llm_response(
 ) -> LLMResponse:
     """
     Get an LLM response with configurable fallback chain.
-    Default chain: NIM → Gemini → LM Studio → Ollama.
-    Benign Agent chain: Gemini → NIM → LM Studio → Ollama.
+    High/Critical chain: NIM → Gemini → Ollama.
+    Low/Medium chain: Gemini → NIM → Ollama.
     """
-    chain = provider_chain or ["nim", "gemini", "lmstudio", "ollama"]
+    chain = provider_chain or ["nim", "gemini", "ollama"]
 
     for provider in chain:
-        if provider == "nim":
+        p = provider.lower().strip()
+        if p == "nim":
             try:
                 result = await call_nim(
                     prompt=prompt,
@@ -104,7 +104,7 @@ async def get_llm_response(
             except Exception as exc:
                 logger.warning("NIM call failed (%s) — trying next provider in chain.", exc)
 
-        elif provider == "gemini":
+        elif p == "gemini":
             try:
                 result = await call_gemini(
                     prompt=prompt,
@@ -119,22 +119,7 @@ async def get_llm_response(
             except Exception as exc:
                 logger.warning("Gemini call failed (%s) — trying next provider in chain.", exc)
 
-        elif provider == "lmstudio":
-            try:
-                result = await call_lmstudio(
-                    prompt=prompt,
-                    system_prompt=system_prompt,
-                    response_format=response_format,
-                )
-                return LLMResponse(
-                    content=result["content"],
-                    provider_used="lmstudio",
-                    latency_ms=result["latency_ms"],
-                )
-            except Exception as exc:
-                logger.warning("LM Studio call failed (%s) — trying next provider in chain.", exc)
-
-        elif provider == "ollama":
+        elif p in ("ollama", "lmstudio", "local"):
             try:
                 result = await call_ollama(
                     prompt=prompt,
@@ -147,7 +132,7 @@ async def get_llm_response(
                     latency_ms=result["latency_ms"],
                 )
             except Exception as exc:
-                logger.warning("Ollama call failed (%s) — trying next provider in chain.", exc)
+                logger.warning("Ollama local AI call failed (%s) — trying next provider in chain.", exc)
 
     raise LLMProviderUnavailable(
         f"All LLM providers in chain {chain} are unavailable."

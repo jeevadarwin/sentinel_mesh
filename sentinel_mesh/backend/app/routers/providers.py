@@ -15,7 +15,6 @@ from pydantic import BaseModel
 from app.config import settings
 from app.llm.nim_client import call_nim
 from app.llm.gemini_client import call_gemini
-from app.llm.lmstudio_client import call_lmstudio
 from app.llm.ollama_client import call_ollama
 
 logger = logging.getLogger(__name__)
@@ -27,14 +26,12 @@ class ProvidersHealthResponse(BaseModel):
     nim: str       # "up" or "down"
     gemini: str    # "up" or "down"
     local: str     # "up" or "down"
-    lmstudio: str  # "up" or "down"
-    ollama: str    # "up" or "down"
     active_cloud: str  # "nim" | "gemini" | "local" | "none"
 
 
 async def _check_nim() -> str:
     try:
-        await asyncio.wait_for(call_nim(prompt="hi"), timeout=8.0)
+        await asyncio.wait_for(call_nim(prompt="hi"), timeout=4.0)
         return "up"
     except Exception as exc:
         logger.debug("NIM health check down: %s", exc)
@@ -47,15 +44,6 @@ async def _check_gemini() -> str:
         return "up"
     except Exception as exc:
         logger.debug("Gemini health check down: %s", exc)
-        return "down"
-
-
-async def _check_lmstudio() -> str:
-    try:
-        await asyncio.wait_for(call_lmstudio(prompt="hi"), timeout=3.0)
-        return "up"
-    except Exception as exc:
-        logger.debug("LM Studio health check down: %s", exc)
         return "down"
 
 
@@ -74,19 +62,14 @@ async def _check_ollama() -> str:
 @router.get("/health", response_model=ProvidersHealthResponse)
 async def get_providers_health() -> ProvidersHealthResponse:
     """
-    Pings all providers and returns status for nim, gemini, and local AI (LM Studio/Ollama).
+    Pings providers (NIM, Gemini, Local Ollama) and returns up/down status.
     """
-    nim_status, gemini_status, lmstudio_status, ollama_status = await asyncio.gather(
+    nim_status, gemini_status, local_status = await asyncio.gather(
         _check_nim(),
         _check_gemini(),
-        _check_lmstudio(),
         _check_ollama(),
     )
 
-    local_status = "up" if (lmstudio_status == "up" or ollama_status == "up") else "down"
-
-    # Determine which provider is actively handling requests:
-    # NIM takes priority (handles HIGH/CRITICAL). Gemini handles LOW/MEDIUM. Local is last resort.
     if nim_status == "up":
         active_cloud = "nim"
     elif gemini_status == "up":
@@ -100,7 +83,5 @@ async def get_providers_health() -> ProvidersHealthResponse:
         nim=nim_status,
         gemini=gemini_status,
         local=local_status,
-        lmstudio=lmstudio_status,
-        ollama=ollama_status,
         active_cloud=active_cloud,
     )

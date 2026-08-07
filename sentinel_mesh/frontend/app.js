@@ -562,17 +562,14 @@ async function checkProviderHealth() {
   try {
     const res = await fetch(`${BACKEND_URL}/providers/health`, {
       headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(4000),
     });
     if (!res.ok) return;
     const data = await res.json();
 
-    const active = data.active_cloud; // "nim" | "gemini" | "local" | "none"
-
-    // Only the single active handling provider gets GREEN, others are RED
-    setProviderDot("nim",    active === "nim",    "NVIDIA NIM — Active (Handling High/Critical Severity)");
-    setProviderDot("gemini", active === "gemini", "Google Gemini — Active (Handling Low/Medium Severity)");
-    setProviderDot("local",  active === "local",  "Local AI (LM Studio) — Air-Gap Active");
+    setProviderDot("nim",    data.nim === "up",    "NVIDIA NIM (Cloud 70B)");
+    setProviderDot("gemini", data.gemini === "up", "Google Gemini (Cloud)");
+    setProviderDot("local",  data.local === "up",  "Local AI (Ollama/Gemma)");
   } catch (err) {
     console.warn("checkProviderHealth failed:", err);
   }
@@ -585,7 +582,7 @@ function setProviderDot(providerKey, isActive, titleText) {
 
   dot.className = `prov-dot ${isActive ? "up" : "down"}`;
   pill.className = `provider-pill ${isActive ? "up" : "down"}`;
-  pill.title = titleText;
+  pill.title = `${titleText}: ${isActive ? "Online / Ready" : "Offline / Standby"}`;
 }
 
 // ─── MITRE Technique Lookup ──────────────────────────────────────────────────

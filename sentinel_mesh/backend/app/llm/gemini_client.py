@@ -13,7 +13,7 @@ from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-GEMINI_TIMEOUT_SECONDS = 15.0
+GEMINI_TIMEOUT_SECONDS = 5.0
 
 
 async def call_gemini(

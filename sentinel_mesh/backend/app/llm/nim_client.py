@@ -19,7 +19,7 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 # NIM timeout in seconds — short so fallback triggers quickly.
-NIM_TIMEOUT_SECONDS = 10.0
+NIM_TIMEOUT_SECONDS = 5.0
 
 
 async def call_nim(
