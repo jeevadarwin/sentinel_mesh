@@ -632,25 +632,25 @@ async function runInvestigation(alertId) {
   container.innerHTML = `
     <div class="debate-header-label">AUTONOMOUS 8-AGENT SOC MESH INVESTIGATION</div>
 
-    <!-- 2-Column Side-by-Side Hero Summaries -->
+    <!-- 2-Column Side-by-Side Hero Summaries (Balanced 4 vs 4 Agents) -->
     <div class="mesh-summary-grid">
       <div class="mesh-summary-card card-threat" id="summary-card-threat">
         <div class="summary-card-header">
-          <span class="summary-title">⚡ THREAT CASE (Actual Attack Vector)</span>
+          <span class="summary-title">⚡ THREAT CASE (4 Threat-Side Agents)</span>
           <span class="summary-badge badge-threat" id="threat-badge">Analyzing...</span>
         </div>
         <div class="summary-body" id="summary-threat-body">
-          <p class="summary-loading">Synthesizing threat evidence...</p>
+          <p class="summary-loading">Synthesizing 4 Threat Agents (Triage, Threat, Impact, Containment)...</p>
         </div>
       </div>
 
       <div class="mesh-summary-card card-benign" id="summary-card-benign">
         <div class="summary-card-header">
-          <span class="summary-title">🛡️ BENIGN CASE (False Alarm / Baseline)</span>
+          <span class="summary-title">🛡️ BENIGN CASE (4 Benign-Side Agents)</span>
           <span class="summary-badge badge-benign" id="benign-badge">Analyzing...</span>
         </div>
         <div class="summary-body" id="summary-benign-body">
-          <p class="summary-loading">Synthesizing benign baseline evidence...</p>
+          <p class="summary-loading">Synthesizing 4 Benign Agents (Benign, Intel, Correlation, Coordinator)...</p>
         </div>
       </div>
     </div>
@@ -679,7 +679,7 @@ async function runInvestigation(alertId) {
   let threatPoints = [];
   let benignPoints = [];
 
-  // Toggle detailed drawer on button or summary card click
+  // Toggle detailed drawer on button click
   if (toggleBtn) {
     toggleBtn.addEventListener("click", () => {
       const isHidden = bubblesGrid.style.display === "none";
@@ -699,13 +699,12 @@ async function runInvestigation(alertId) {
   const sse = new EventSource(sseUrl);
   activeDebateSource = sse;
 
-  // Stage 1 SSE Events
+  // STAGE 1: Triage (Threat Side) ║ Threat Intel (Benign Side) ║ Correlation (Benign Side)
   sse.addEventListener("triage", (e) => {
     try {
       const data = JSON.parse(e.data);
       threatBadge.textContent = `Urgency: ${data.urgency_level}`;
-      threatPoints.push(`Urgency Rating: ${data.urgency_level} (${data.triage_summary})`);
-      (data.key_findings || []).forEach(f => threatPoints.push(f));
+      threatPoints.push(`[🔍 Triage Agent] Urgency: ${data.urgency_level} — ${data.triage_summary}`);
       renderSummaryLists(threatBody, threatPoints, benignBody, benignPoints);
 
       bubblesGrid.appendChild(renderAgentBubble({
@@ -722,8 +721,7 @@ async function runInvestigation(alertId) {
     try {
       const data = JSON.parse(e.data);
       benignBadge.textContent = `Threat Level: ${data.threat_level}`;
-      benignPoints.push(`IOC Level: ${data.threat_level} (${data.reputation_summary})`);
-      (data.ioc_insights || []).forEach(i => benignPoints.push(i));
+      benignPoints.push(`[🌐 Threat Intel Agent] Level: ${data.threat_level} — ${data.reputation_summary}`);
       renderSummaryLists(threatBody, threatPoints, benignBody, benignPoints);
 
       bubblesGrid.appendChild(renderAgentBubble({
@@ -739,8 +737,7 @@ async function runInvestigation(alertId) {
   sse.addEventListener("correlation", (e) => {
     try {
       const data = JSON.parse(e.data);
-      benignPoints.push(`Telemetry Pattern: ${data.pattern_type} (${data.correlation_summary})`);
-      (data.telemetry_matches || []).forEach(m => benignPoints.push(m));
+      benignPoints.push(`[📊 Log Correlation Agent] Pattern: ${data.pattern_type} — ${data.correlation_summary}`);
       renderSummaryLists(threatBody, threatPoints, benignBody, benignPoints);
 
       bubblesGrid.appendChild(renderAgentBubble({
@@ -753,12 +750,11 @@ async function runInvestigation(alertId) {
     } catch (err) { console.warn("Correlation parse error:", err); }
   });
 
-  // Stage 2 SSE Events
+  // STAGE 2: Threat Agent (Threat Side) ║ Benign Agent (Benign Side)
   sse.addEventListener("threat_argument", (e) => {
     try {
       const arg = JSON.parse(e.data);
-      threatPoints.push(`Attack Vector: ${arg.position}`);
-      (arg.supporting_points || []).forEach(p => threatPoints.push(p));
+      threatPoints.push(`[⚡ Threat Agent] Attack Stance: ${arg.position}`);
       renderSummaryLists(threatBody, threatPoints, benignBody, benignPoints);
 
       bubblesGrid.appendChild(renderAgentBubble(arg));
@@ -768,20 +764,18 @@ async function runInvestigation(alertId) {
   sse.addEventListener("benign_argument", (e) => {
     try {
       const arg = JSON.parse(e.data);
-      benignPoints.push(`False Positive Argument: ${arg.position}`);
-      (arg.supporting_points || []).forEach(p => benignPoints.push(p));
+      benignPoints.push(`[🛡️ Benign Agent] False Positive Stance: ${arg.position}`);
       renderSummaryLists(threatBody, threatPoints, benignBody, benignPoints);
 
       bubblesGrid.appendChild(renderAgentBubble(arg));
     } catch (err) { console.warn("Benign arg parse error:", err); }
   });
 
-  // Stage 3 SSE Events
+  // STAGE 3: Business Impact (Threat Side) ║ Containment (Threat Side)
   sse.addEventListener("business_impact", (e) => {
     try {
       const data = JSON.parse(e.data);
-      threatPoints.push(`Business Exposure: ${data.impact_severity} (${data.financial_risk})`);
-      (data.compliance_risks || []).forEach(c => threatPoints.push(`Compliance Risk: ${c}`));
+      threatPoints.push(`[💼 Business Impact Agent] Severity: ${data.impact_severity} — ${data.financial_risk}`);
       renderSummaryLists(threatBody, threatPoints, benignBody, benignPoints);
 
       bubblesGrid.appendChild(renderAgentBubble({
@@ -797,7 +791,7 @@ async function runInvestigation(alertId) {
   sse.addEventListener("containment", (e) => {
     try {
       const data = JSON.parse(e.data);
-      threatPoints.push(`Containment Action: ${data.action_type} (${data.action_summary})`);
+      threatPoints.push(`[🚨 Containment Agent] Action: ${data.action_type} — ${data.action_summary}`);
       renderSummaryLists(threatBody, threatPoints, benignBody, benignPoints);
 
       bubblesGrid.appendChild(renderAgentBubble({
@@ -810,10 +804,13 @@ async function runInvestigation(alertId) {
     } catch (err) { console.warn("Containment parse error:", err); }
   });
 
-  // Stage 4 Verdict SSE Event
+  // STAGE 4: Verdict (SOC Coordinator added to Benign Side Summary)
   sse.addEventListener("verdict", (e) => {
     try {
       const decision = JSON.parse(e.data);
+      benignPoints.push(`[⚖️ SOC Coordinator Agent] Verdict: ${decision.verdict} (${decision.reasoning_summary})`);
+      renderSummaryLists(threatBody, threatPoints, benignBody, benignPoints);
+
       const verdictCard = renderVerdictCard(decision);
       verdictSlot.appendChild(verdictCard);
     } catch (err) {
