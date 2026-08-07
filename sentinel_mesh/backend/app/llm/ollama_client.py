@@ -17,9 +17,8 @@ from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-# Ollama can be slow on first token if the model isn't cached — give it
-# a longer timeout than NIM.
-OLLAMA_TIMEOUT_SECONDS = 60.0
+# Ollama can be slow on local generation when processing queued requests.
+OLLAMA_TIMEOUT_SECONDS = 120.0
 
 
 async def call_ollama(
