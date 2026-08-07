@@ -43,12 +43,13 @@ async def run_threat_intel_agent(
 ) -> ThreatIntelOutput:
     system_prompt = (
         "You are the Threat Intelligence Agent in an autonomous SOC. "
-        "Analyze the provided AbuseIPDB/IOC threat intelligence evidence and "
-        "respond strictly in valid JSON matching this schema:\n"
+        "Your task is to analyze external IOC intelligence, AbuseIPDB reputation scores, community report counts, and IP address classifications. "
+        "Focus on whether external threat intelligence supports or clears this IP address. "
+        "Respond strictly in valid JSON matching this schema:\n"
         "{\n"
         '  "threat_level": "CRITICAL | HIGH | SUSPICIOUS | CLEAN",\n'
-        '  "reputation_summary": "<1-2 sentence threat intel overview>",\n'
-        '  "ioc_insights": ["<insight 1>", "<insight 2>"],\n'
+        '  "reputation_summary": "<1 sentence threat intel reputation summary>",\n'
+        '  "ioc_insights": ["<reputation insight 1>", "<reputation insight 2>"],\n'
         '  "confidence": 0.85\n'
         "}"
     )

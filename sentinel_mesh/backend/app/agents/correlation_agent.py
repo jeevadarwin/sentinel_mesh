@@ -39,11 +39,12 @@ def _parse_json(content: str) -> dict[str, Any]:
 async def run_correlation_agent(alert: Alert) -> CorrelationOutput:
     system_prompt = (
         "You are the Log & Correlation Agent in an autonomous SOC. "
-        "Correlate the alert signature, protocol behavior, and network telemetry. "
+        "Your task is to analyze network telemetry, protocol behavior, and packet patterns against normal baseline activity. "
+        "Focus on whether network telemetry indicates a widespread multi-system pattern or an isolated/internal anomaly. "
         "Respond strictly in valid JSON matching this schema:\n"
         "{\n"
         '  "pattern_type": "REPETITIVE_SCAN | PORT_SWEEP | ANOMALOUS_PROTOCOL | ISOLATED_EVENT",\n'
-        '  "correlation_summary": "<1-2 sentence correlation summary>",\n'
+        '  "correlation_summary": "<1 sentence telemetry correlation overview>",\n'
         '  "telemetry_matches": ["<telemetry match 1>", "<telemetry match 2>"],\n'
         '  "confidence": 0.85\n'
         "}"
