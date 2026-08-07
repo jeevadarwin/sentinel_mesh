@@ -90,8 +90,8 @@ async def build_benign_argument(
     sev_str = str(alert.severity).lower().strip()
     is_high_critical = sev_str in ("4", "5", "high", "critical") or (sev_str.isdigit() and int(sev_str) >= 4)
     provider_chain = (
-        ["nim", "gemini", "ollama"] if is_high_critical
-        else ["gemini", "nim", "ollama"]
+        ["nim", "groq", "ollama"] if is_high_critical
+        else ["gemini", "groq", "ollama"]
     )
     llm_resp = await get_llm_response(
         prompt=user_prompt,

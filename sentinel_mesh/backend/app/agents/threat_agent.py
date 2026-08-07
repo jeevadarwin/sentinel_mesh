@@ -69,9 +69,9 @@ def _get_provider_chain_for_severity(severity: Any) -> list[str]:
         is_high_critical = True
 
     if is_high_critical:
-        return ["nim", "gemini", "ollama"]
+        return ["nim", "groq", "ollama"]
     else:
-        return ["gemini", "nim", "ollama"]
+        return ["gemini", "groq", "ollama"]
 
 
 async def build_threat_argument(

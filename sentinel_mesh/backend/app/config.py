@@ -73,6 +73,18 @@ class Settings(BaseSettings):
     )
 
     # ------------------------------------------------------------------ #
+    # Groq — fast cloud fallback (OpenAI-compatible, free tier)           #
+    # ------------------------------------------------------------------ #
+    groq_api_key: str = Field(
+        default="",
+        description="Groq API key. Optional; enables Groq as a fallback provider.",
+    )
+    groq_model: str = Field(
+        default="llama-3.3-70b-versatile",
+        description="Groq model identifier. llama-3.3-70b-versatile is free and fast.",
+    )
+
+    # ------------------------------------------------------------------ #
     # Enrichment — placeholder; populated in Phase 3                      #
     # ------------------------------------------------------------------ #
     enrichment_api_key: str = Field(
