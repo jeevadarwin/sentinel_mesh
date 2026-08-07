@@ -691,11 +691,35 @@ async function runInvestigation(alertId) {
   });
 }
 
+function renderBubbleProviderDots(providerUsed) {
+  const p = (providerUsed || "").toLowerCase();
+  const isNim = p === "nim";
+  const isGemini = p === "gemini";
+  const isLocal = p === "lmstudio" || p === "ollama" || p === "local";
+
+  return `
+    <div class="bubble-provider-dots" title="Response served by ${escHtml((p || 'unknown').toUpperCase())}">
+      <span class="bubble-dot-group">
+        <span class="bubble-dot ${isNim ? 'dot-active-green' : 'dot-inactive-red'}"></span>
+        <span class="bubble-dot-lbl ${isNim ? 'active' : ''}">NIM</span>
+      </span>
+      <span class="bubble-dot-group">
+        <span class="bubble-dot ${isGemini ? 'dot-active-green' : 'dot-inactive-red'}"></span>
+        <span class="bubble-dot-lbl ${isGemini ? 'active' : ''}">Gemini</span>
+      </span>
+      <span class="bubble-dot-group">
+        <span class="bubble-dot ${isLocal ? 'dot-active-green' : 'dot-inactive-red'}"></span>
+        <span class="bubble-dot-lbl ${isLocal ? 'active' : ''}">Local</span>
+      </span>
+    </div>
+  `;
+}
+
 function renderAgentBubble(arg) {
   const isThreat = arg.agent_name === "threat";
   const title = isThreat ? "Threat Agent" : "Benign Agent";
   const cls = isThreat ? "bubble-threat" : "bubble-benign";
-  const provTag = arg.provider_used ? `<span class="prov-tag">via ${escHtml(arg.provider_used.toUpperCase())}</span>` : "";
+  const dotsHtml = renderBubbleProviderDots(arg.provider_used);
 
   const pointsList = (arg.supporting_points || [])
     .map((p) => `<li>${escHtml(p)}</li>`)
@@ -710,10 +734,12 @@ function renderAgentBubble(arg) {
   card.className = `agent-bubble ${cls}`;
   card.innerHTML = `
     <div class="bubble-header">
-      <span class="bubble-title">${title}</span>
+      <div class="bubble-title-group">
+        <span class="bubble-title">${title}</span>
+        ${dotsHtml}
+      </div>
       <div class="bubble-meta">
         ${mitreTag}
-        ${provTag}
         <span class="conf-badge">Conf: ${Math.round((arg.confidence || 0) * 100)}%</span>
       </div>
     </div>
@@ -730,7 +756,7 @@ function renderVerdictCard(d) {
 
   const confPercent = Math.round((d.confidence || 0) * 100);
   const latencyStr = d.latency_ms ? `verdict in ${(d.latency_ms / 1000).toFixed(2)}s` : "cached verdict";
-  const provTag = d.provider_used ? `<span class="prov-tag">via ${escHtml(d.provider_used.toUpperCase())}</span>` : "";
+  const dotsHtml = renderBubbleProviderDots(d.provider_used);
   
   const mitreFullText = d.mitre_mapping ? (MITRE_LABELS[d.mitre_mapping] || `MITRE ${d.mitre_mapping}`) : "";
   const mitreChip = mitreFullText ? `<span class="mitre-chip">${escHtml(mitreFullText)}</span>` : "";
@@ -772,9 +798,9 @@ function renderVerdictCard(d) {
       <div class="verdict-title-group">
         <span class="verdict-badge ${verdictCls}">${escHtml(d.verdict)}</span>
         <span class="verdict-prio prio-${escHtml((d.priority || "MEDIUM").toLowerCase())}">Priority: ${escHtml(d.priority || "MEDIUM")}</span>
+        ${dotsHtml}
       </div>
       <div class="verdict-meta">
-        ${provTag}
       </div>
     </div>
 

@@ -51,17 +51,26 @@ def _parse_json_response(content: str) -> dict[str, Any]:
     }
 
 
-def _get_provider_chain_for_severity(severity: int) -> list[str]:
+def _get_provider_chain_for_severity(severity: Any) -> list[str]:
     """
-    Route to NIM for HIGH/CRITICAL alerts (severity 4-5).
-    Route to Gemini for LOW/MEDIUM alerts (severity 1-3).
-    Always fall back to Local AI when cloud is unavailable.
+    Routing rule (applied BEFORE fallback chain):
+    - severity in [high, critical, 4, 5] -> primary provider = NIM
+      chain: ["nim", "gemini", "lmstudio", "ollama"]
+    - severity in [medium, low, 1, 2, 3] -> primary provider = Gemini
+      chain: ["gemini", "nim", "lmstudio", "ollama"]
+    - If primary unreachable/times out -> falls back through chain ending at LM Studio -> Ollama.
     """
-    if severity >= 4:
-        # HIGH / CRITICAL → NIM (70B model, maximum accuracy)
-        return ["nim", "lmstudio", "ollama"]
+    sev_str = str(severity).lower().strip()
+    is_high_critical = False
+
+    if sev_str in ("4", "5", "high", "critical"):
+        is_high_critical = True
+    elif sev_str.isdigit() and int(sev_str) >= 4:
+        is_high_critical = True
+
+    if is_high_critical:
+        return ["nim", "gemini", "lmstudio", "ollama"]
     else:
-        # LOW / MEDIUM → Gemini (fast, efficient)
         return ["gemini", "nim", "lmstudio", "ollama"]
 
 

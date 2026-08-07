@@ -100,9 +100,11 @@ async def decide(
         "Render your final decision in JSON now."
     )
 
-    # Coordinator uses the highest-accuracy model matching the alert severity
+    # Coordinator uses severity-based primary provider before fallback chain
+    sev_str = str(alert.severity).lower().strip()
+    is_high_critical = sev_str in ("4", "5", "high", "critical") or (sev_str.isdigit() and int(sev_str) >= 4)
     coord_chain = (
-        ["nim", "lmstudio", "ollama"] if alert.severity >= 4
+        ["nim", "gemini", "lmstudio", "ollama"] if is_high_critical
         else ["gemini", "nim", "lmstudio", "ollama"]
     )
     llm_resp = await get_llm_response(

@@ -1320,5 +1320,59 @@ body {
   font-weight: 700;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* PER-RESPONSE PROVIDER STATUS DOTS (NIM, Gemini, Local)                     */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+.bubble-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bubble-provider-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 3px 9px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bubble-dot-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bubble-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.bubble-dot.dot-active-green {
+  background: var(--colour-success);
+  box-shadow: 0 0 6px rgba(0, 230, 118, 0.8);
+}
+
+.bubble-dot.dot-inactive-red {
+  background: var(--colour-error);
+  opacity: 0.5;
+}
+
+.bubble-dot-lbl {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--colour-text-muted);
+}
+
+.bubble-dot-lbl.active {
+  color: var(--colour-text);
+  font-weight: 700;
+}
+
 
 
