@@ -91,16 +91,17 @@ async def build_threat_argument(
     enrichment_str = "; ".join(enrichment_summary) if enrichment_summary else "No enrichment available"
 
     system_prompt = (
-        "You are the Threat Agent in a Security Operations Centre (SOC) multi-agent debate platform.\n"
-        "Your task is to analyze security alerts and argue persuasively that the alert is a TRUE_POSITIVE threat/attack.\n"
+        "You are the Threat Agent in an autonomous SOC (Threat / Criticize Side).\n"
+        "Your mandate is to strictly argue persuasively that this alert represents a TRUE_POSITIVE threat/attack vector.\n"
+        "Do NOT argue that it is benign or a false alarm under any circumstances.\n"
         "Reference specific evidence from the alert signature, IP addresses, category, raw log payload, and threat-intel scores.\n"
-        "Mention a relevant MITRE ATT&CK technique (e.g., T1046, T1059, T1190, T1071) if applicable in plain text.\n"
+        "Mention a relevant MITRE ATT&CK technique (e.g., T1046, T1059, T1190, T1071) in plain text.\n"
         "Return ONLY a JSON object formatted exactly as:\n"
         "{\n"
-        '  "position": "<one sentence stance arguing this is a threat>",\n'
-        '  "supporting_points": ["<point 1>", "<point 2>", "<point 3>"],\n'
-        '  "confidence": <float 0.0 to 1.0>,\n'
-        '  "mitre_technique": "<e.g. T1046 or null>"\n'
+        '  "position": "<one sentence stance arguing this is a true positive threat>",\n'
+        '  "supporting_points": ["<attack point 1>", "<attack point 2>", "<attack point 3>"],\n'
+        '  "confidence": 0.88,\n'
+        '  "mitre_technique": "T1046"\n'
         "}"
     )
 

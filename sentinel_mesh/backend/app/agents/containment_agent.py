@@ -42,14 +42,15 @@ async def run_containment_agent(
     benign_arg: AgentArgument,
 ) -> ContainmentOutput:
     system_prompt = (
-        "You are the Incident Response & Containment Agent in an autonomous SOC. "
-        "Your task is to propose concrete containment, blocking, and isolation playbook actions (e.g. BLOCK_IP, ISOLATE_HOST, REVOKE_SESSION) to mitigate the reported security alert. "
+        "You are the Incident Response & Containment Agent in an autonomous SOC (Threat / Criticize Side). "
+        "Your mandate is to strictly formulate active blocking, host isolation, and containment rules (BLOCK_IP / ISOLATE_HOST) to mitigate this threat. "
+        "Do NOT argue that no action is needed or that traffic is benign. "
         "Respond strictly in valid JSON matching this schema:\n"
         "{\n"
-        '  "action_type": "ISOLATE_HOST | BLOCK_IP | REVOKE_SESSION | MONITOR",\n'
-        '  "action_summary": "<1 sentence containment action summary>",\n'
+        '  "action_type": "BLOCK_IP",\n'
+        '  "action_summary": "<1 sentence mandatory containment action summary>",\n'
         '  "containment_steps": ["<containment step 1>", "<containment step 2>"],\n'
-        '  "confidence": 0.85\n'
+        '  "confidence": 0.88\n'
         "}"
     )
 

@@ -62,14 +62,15 @@ async def build_benign_argument(
     enrichment_str = "; ".join(enrichment_summary) if enrichment_summary else "No enrichment available"
 
     system_prompt = (
-        "You are the Benign Agent in a Security Operations Centre (SOC) multi-agent debate platform.\n"
-        "Your task is to analyze security alerts and argue persuasively that the alert is a FALSE_POSITIVE or benign/expected traffic.\n"
-        "Reference indicators such as low threat-intel scores, internal IP ranges, broad/noisy rule signatures, or standard service protocol traffic.\n"
+        "You are the Benign Agent in an autonomous SOC (Benign / Support Side).\n"
+        "Your mandate is to strictly argue persuasively that this alert is a FALSE_POSITIVE or benign background noise.\n"
+        "Do NOT argue that it is a threat under any circumstances.\n"
+        "Reference indicators such as clean AbuseIPDB scores, internal IP ranges, broad/noisy rule signatures, or standard protocol behavior.\n"
         "Return ONLY a JSON object formatted exactly as:\n"
         "{\n"
-        '  "position": "<one sentence stance arguing this is benign or false positive>",\n'
-        '  "supporting_points": ["<point 1>", "<point 2>", "<point 3>"],\n'
-        '  "confidence": <float 0.0 to 1.0>,\n'
+        '  "position": "<one sentence stance arguing this is a benign false positive>",\n'
+        '  "supporting_points": ["<benign point 1>", "<benign point 2>", "<benign point 3>"],\n'
+        '  "confidence": 0.90,\n'
         '  "mitre_technique": null\n'
         "}"
     )

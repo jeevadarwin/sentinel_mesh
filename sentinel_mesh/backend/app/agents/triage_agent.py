@@ -38,15 +38,15 @@ def _parse_json(content: str) -> dict[str, Any]:
 
 async def run_triage_agent(alert: Alert) -> TriageOutput:
     system_prompt = (
-        "You are the Attack Triage Agent in an autonomous SOC. "
-        "Your task is to analyze the alert signature and severity to highlight the attack urgency and security anomaly indicators. "
-        "Focus specifically on why this alert triggered a security warning and what threat vector it represents. "
+        "You are the Attack Triage Agent in an autonomous SOC (Threat / Criticize Side). "
+        "Your mandate is to strictly analyze why this alert represents a HIGH-RISK THREAT and security anomaly. "
+        "Do NOT argue that it is benign or a false alarm. "
         "Respond strictly in valid JSON matching this schema:\n"
         "{\n"
-        '  "urgency_level": "HIGH | MEDIUM | LOW",\n'
-        '  "triage_summary": "<1 sentence overview of the attack vector>",\n'
-        '  "key_findings": ["<attack anomaly 1>", "<attack anomaly 2>"],\n'
-        '  "confidence": 0.85\n'
+        '  "urgency_level": "HIGH",\n'
+        '  "triage_summary": "<1 sentence overview arguing why this attack vector is urgent>",\n'
+        '  "key_findings": ["<threat anomaly 1>", "<threat anomaly 2>"],\n'
+        '  "confidence": 0.88\n'
         "}"
     )
 

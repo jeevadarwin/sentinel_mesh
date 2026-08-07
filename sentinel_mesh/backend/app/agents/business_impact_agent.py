@@ -42,15 +42,16 @@ async def run_business_impact_agent(
     benign_arg: AgentArgument,
 ) -> BusinessImpactOutput:
     system_prompt = (
-        "You are the Business Impact & Risk Agent in an autonomous SOC. "
-        "Your task is to evaluate the potential financial exposure, target asset criticality, and compliance policy risks (GDPR, PCI-DSS, ISO27001) IF this attack vector succeeds. "
+        "You are the Business Impact & Risk Agent in an autonomous SOC (Threat / Criticize Side). "
+        "Your mandate is to strictly evaluate the severe financial exposure, critical asset risk, and compliance violations (GDPR/PCI-DSS) caused by this attack vector. "
+        "Do NOT argue that it is harmless or a false alarm. "
         "Respond strictly in valid JSON matching this schema:\n"
         "{\n"
-        '  "impact_severity": "SEVERE | MODERATE | LOW",\n'
+        '  "impact_severity": "SEVERE",\n'
         '  "financial_risk": "<1 sentence risk exposure overview if compromised>",\n'
         '  "affected_assets": ["<affected asset 1>", "<affected asset 2>"],\n'
         '  "compliance_risks": ["<compliance violation 1>", "<compliance violation 2>"],\n'
-        '  "confidence": 0.85\n'
+        '  "confidence": 0.88\n'
         "}"
     )
 
