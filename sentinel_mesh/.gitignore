@@ -1,0 +1,45 @@
+# ─── Secrets — NEVER commit these ───────────────────────────────────────────
+.env
+*.pem
+*.key
+
+# ─── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+ENV/
+
+# ─── Testing & coverage ──────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# ─── IDE & OS ────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Node (if frontend tooling is added in a later phase) ────────────────────
+node_modules/
+dist/
+.next/
+
+# ─── Logs ────────────────────────────────────────────────────────────────────
+*.log
+logs/

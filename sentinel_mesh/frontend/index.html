@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- SEO -->
+  <title>Sentinel Mesh — SOC Intelligence Platform</title>
+  <meta
+    name="description"
+    content="Autonomous Multi-Agent Security Operations Centre platform. Real-time alert triage powered by multi-LLM debate architecture."
+  />
+
+  <!-- Google Font: JetBrains Mono for terminal/log content; Inter for UI -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ================================================================ -->
+  <!-- HEADER                                                            -->
+  <!-- ================================================================ -->
+  <header class="app-header" role="banner">
+    <div class="header-inner">
+      <!-- Wordmark -->
+      <div class="wordmark">
+        <span class="wordmark-sentinel">SENTINEL</span>
+        <span class="wordmark-mesh">MESH</span>
+        <span class="wordmark-tag">SOC Intelligence Platform</span>
+      </div>
+
+      <!-- Live Feed Controls -->
+      <div class="feed-controls" role="group" aria-label="Live feed controls">
+        <button
+          id="btn-start-feed"
+          class="btn btn-start"
+          title="Start ingesting real Suricata WRCCDC 2018 alerts"
+        >
+          <span class="btn-icon">▶</span>
+          Start Live Feed
+        </button>
+        <button
+          id="btn-stop-feed"
+          class="btn btn-stop"
+          title="Stop the live alert stream"
+          disabled
+        >
+          <span class="btn-icon">■</span>
+          Stop
+        </button>
+        <!-- Stream indicator pill -->
+        <div class="stream-indicator" id="stream-indicator" aria-live="polite">
+          <span class="stream-dot" id="stream-dot"></span>
+          <span class="stream-label" id="stream-label">Idle</span>
+        </div>
+      </div>
+
+      <!-- Connection status indicator — updated by app.js on load -->
+      <div class="conn-status" id="conn-status" aria-live="polite">
+        <span class="conn-dot" id="conn-dot"></span>
+        <span class="conn-label" id="conn-label">Connecting…</span>
+      </div>
+
+      <!-- Provider Status Indicators (NIM, Gemini, LM Studio, Ollama) -->
+      <div class="provider-status-container" id="provider-status" title="LLM Provider Health">
+        <span class="provider-pill" id="prov-nim"><span class="prov-dot" id="dot-nim"></span>NIM</span>
+        <span class="provider-pill" id="prov-gemini"><span class="prov-dot" id="dot-gemini"></span>Gemini</span>
+        <span class="provider-pill" id="prov-lmstudio"><span class="prov-dot" id="dot-lmstudio"></span>LM Studio</span>
+        <span class="provider-pill" id="prov-ollama"><span class="prov-dot" id="dot-ollama"></span>Ollama</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================================================================ -->
+  <!-- MAIN LAYOUT (two-panel)                                          -->
+  <!-- ================================================================ -->
+  <main class="app-layout" role="main">
+
+    <!-- LEFT PANEL — Alert list -->
+    <section class="panel panel-left" aria-label="Alert list">
+      <div class="panel-header">
+        <h1 class="panel-title">Active Alerts</h1>
+        <div class="panel-header-controls">
+          <!-- Severity filter -->
+          <select id="severity-filter" class="severity-select" aria-label="Filter by severity">
+            <option value="">All Severities</option>
+            <option value="5">Critical (5)</option>
+            <option value="4">High (4)</option>
+            <option value="3">Medium (3)</option>
+            <option value="2">Low-Med (2)</option>
+            <option value="1">Low (1)</option>
+          </select>
+          <span class="panel-badge" id="alert-count">0</span>
+        </div>
+      </div>
+
+      <!-- #alert-list — populated by alert ingestion -->
+      <div class="alert-list" id="alert-list" role="list">
+        <div class="empty-state" id="alert-empty-state">
+          <div class="empty-icon">⬡</div>
+          <p class="empty-title">No alerts ingested yet</p>
+          <p class="empty-sub">Click <strong>Start Live Feed</strong> to begin replaying real Suricata WRCCDC 2018 detections.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL — Alert detail -->
+    <section class="panel panel-right" aria-label="Alert detail">
+      <div class="panel-header">
+        <h2 class="panel-title">Alert Detail</h2>
+        <span class="panel-badge panel-badge-detail" id="detail-severity-badge" style="display:none;"></span>
+      </div>
+
+      <!-- #alert-detail — populated when an alert is selected -->
+      <div class="alert-detail" id="alert-detail">
+        <div class="empty-state" id="detail-empty-state">
+          <div class="empty-icon">◈</div>
+          <p class="empty-title">Select an alert to inspect</p>
+          <p class="empty-sub">Click any alert row to see full Suricata detection details, including raw log payload.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================================================================ -->
+  <!-- STATUS BAR                                                        -->
+  <!-- ================================================================ -->
+  <footer class="status-bar" role="contentinfo">
+    <span id="status-backend">Backend: —</span>
+    <span class="status-sep">|</span>
+    <span id="status-phase">Phase 4 — Multi-Agent Debate</span>
+    <span class="status-sep">|</span>
+    <span id="status-alerts">Alerts: 0</span>
+    <span class="status-sep">|</span>
+    <span id="status-time"></span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# Sentinel Mesh — Backend Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# Web framework
+fastapi
+
+# ASGI server (includes websockets, http/2 support)
+uvicorn[standard]
+
+# Data validation and settings management
+pydantic
+pydantic-settings
+
+# Environment variable loading
+python-dotenv
+
+# Async HTTP client (used for NIM, Ollama, and enrichment API calls)
+httpx
+
+# Form data / file upload support (required by FastAPI for multipart)
+python-multipart
