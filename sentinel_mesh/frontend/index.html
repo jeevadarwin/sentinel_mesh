@@ -152,18 +152,76 @@
         <div class="token-canvas-wrapper">
           <div class="token-canvas-box">
             <div class="token-canvas-title">
-              <span>📊 Real-Time Token Transfer Wave Graph</span>
+              <span>📊 Real-Time Token Transfer Chart</span>
               <span style="color: var(--colour-accent);">Tokens / Sec</span>
             </div>
-            <canvas id="token-wave-canvas" class="token-chart-canvas" width="360" height="110"></canvas>
+            <div class="svg-chart-container">
+              <svg id="token-wave-svg" viewBox="0 0 360 70" preserveAspectRatio="none" style="width:100%; height:70px; display:block;">
+                <defs>
+                  <linearGradient id="cyan-grad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.35"/>
+                    <stop offset="100%" stop-color="#00e5ff" stop-opacity="0.0"/>
+                  </linearGradient>
+                </defs>
+                <!-- Background Grid Lines -->
+                <line x1="0" y1="18" x2="360" y2="18" stroke="rgba(255,255,255,0.06)" stroke-dasharray="2,2"/>
+                <line x1="0" y1="36" x2="360" y2="36" stroke="rgba(255,255,255,0.06)" stroke-dasharray="2,2"/>
+                <line x1="0" y1="54" x2="360" y2="54" stroke="rgba(255,255,255,0.06)" stroke-dasharray="2,2"/>
+                
+                <!-- Area Fill & Polyline -->
+                <path id="svg-fill-path" fill="url(#cyan-grad)" d="M0,70 L0,50 L360,50 L360,70 Z"/>
+                <polyline id="svg-line-path" fill="none" stroke="#00e5ff" stroke-width="2.5" points="0,50 360,50"/>
+              </svg>
+            </div>
           </div>
 
           <div class="token-canvas-box">
             <div class="token-canvas-title">
-              <span>🌐 8-Agent Mesh Particle Transfer Topology</span>
-              <span style="color: #00e676;">Active Node Flow</span>
+              <span>🌐 8-Agent Mesh Topology Telemetry</span>
+              <span style="color: #00e676;">Active Agents</span>
             </div>
-            <canvas id="token-mesh-canvas" class="token-chart-canvas" width="360" height="110"></canvas>
+            <div class="agent-mesh-grid" id="agent-mesh-grid">
+              <div class="agent-node-box" id="node-triage" style="--node-color: #ffb703;">
+                <span class="node-icon">🔍</span>
+                <span class="node-name">Triage</span>
+                <span class="node-tokens" id="node-tok-triage">0t</span>
+              </div>
+              <div class="agent-node-box" id="node-threat_intel" style="--node-color: #69f0ae;">
+                <span class="node-icon">🌐</span>
+                <span class="node-name">Intel</span>
+                <span class="node-tokens" id="node-tok-intel">0t</span>
+              </div>
+              <div class="agent-node-box" id="node-correlation" style="--node-color: #00e5ff;">
+                <span class="node-icon">📊</span>
+                <span class="node-name">Correlation</span>
+                <span class="node-tokens" id="node-tok-correlation">0t</span>
+              </div>
+              <div class="agent-node-box" id="node-threat" style="--node-color: #ff5252;">
+                <span class="node-icon">⚡</span>
+                <span class="node-name">Threat</span>
+                <span class="node-tokens" id="node-tok-threat">0t</span>
+              </div>
+              <div class="agent-node-box" id="node-benign" style="--node-color: #00e676;">
+                <span class="node-icon">🛡️</span>
+                <span class="node-name">Benign</span>
+                <span class="node-tokens" id="node-tok-benign">0t</span>
+              </div>
+              <div class="agent-node-box" id="node-business_impact" style="--node-color: #ffab00;">
+                <span class="node-icon">💼</span>
+                <span class="node-name">Impact</span>
+                <span class="node-tokens" id="node-tok-impact">0t</span>
+              </div>
+              <div class="agent-node-box" id="node-containment" style="--node-color: #e040fb;">
+                <span class="node-icon">🚨</span>
+                <span class="node-name">Response</span>
+                <span class="node-tokens" id="node-tok-containment">0t</span>
+              </div>
+              <div class="agent-node-box" id="node-coordinator" style="--node-color: #ffd700;">
+                <span class="node-icon">⚖️</span>
+                <span class="node-name">Coordinator</span>
+                <span class="node-tokens" id="node-tok-coordinator">0t</span>
+              </div>
+            </div>
           </div>
         </div>
 

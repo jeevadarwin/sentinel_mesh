@@ -1730,5 +1730,51 @@ canvas.token-chart-canvas {
   font-weight: 700;
 }
 
+/* 8-Agent Mesh Grid Boxes */
+.agent-mesh-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  height: 70px;
+}
+
+.agent-node-box {
+  background: rgba(18, 25, 38, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3px solid var(--node-color, #00e5ff);
+  border-radius: 4px;
+  padding: 4px 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.agent-node-box.active-flash {
+  box-shadow: 0 0 12px var(--node-color, #00e5ff);
+  border-color: var(--node-color, #00e5ff);
+  background: rgba(0, 229, 255, 0.15);
+}
+
+.node-icon {
+  font-size: 11px;
+}
+
+.node-name {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: #c9d1e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.node-tokens {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--colour-accent);
+}
+
 
 

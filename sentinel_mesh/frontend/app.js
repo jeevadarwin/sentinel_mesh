@@ -1114,22 +1114,20 @@ let tokenMetrics = {
   totalPrompt: 0,
   totalCompletion: 0,
   totalTransferred: 0,
-  history: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  history: [120, 140, 110, 130, 160, 120, 150, 140, 130, 170, 150, 140, 160, 180, 150, 130, 140, 160, 150, 140],
   lastTimestamp: Date.now(),
 };
 
-const AGENT_NODES = [
-  { id: "triage", label: "Triage", x: 40, y: 35, tokens: 0, color: "#ffb703" },
-  { id: "threat_intel", label: "ThreatIntel", x: 120, y: 35, tokens: 0, color: "#69f0ae" },
-  { id: "correlation", label: "Correlation", x: 200, y: 35, tokens: 0, color: "#00e5ff" },
-  { id: "threat", label: "ThreatAgent", x: 280, y: 35, tokens: 0, color: "#ff5252" },
-  { id: "benign", label: "BenignAgent", x: 80, y: 85, tokens: 0, color: "#00e676" },
-  { id: "business_impact", label: "ImpactAgent", x: 160, y: 85, tokens: 0, color: "#ffab00" },
-  { id: "containment", label: "Containment", x: 240, y: 85, tokens: 0, color: "#e040fb" },
-  { id: "coordinator", label: "Coordinator", x: 320, y: 85, tokens: 0, color: "#ffd700" }
-];
-
-let activeParticles = [];
+const AGENT_TOKENS = {
+  triage: 0,
+  threat_intel: 0,
+  correlation: 0,
+  threat: 0,
+  benign: 0,
+  business_impact: 0,
+  containment: 0,
+  coordinator: 0
+};
 
 function recordTokenTransfer(agentName, promptTokens = 280, completionTokens = 140) {
   const sum = promptTokens + completionTokens;
@@ -1157,18 +1155,10 @@ function recordTokenTransfer(agentName, promptTokens = 280, completionTokens = 1
   if (elRate) elRate.textContent = `${rate} t/s`;
   if (elSaved) elSaved.textContent = `$${(tokenMetrics.totalTransferred * 0.000015).toFixed(3)}`;
 
-  const targetNode = AGENT_NODES.find(n => n.id.toLowerCase().includes((agentName || "").toLowerCase()) || agentName.toLowerCase().includes(n.id.toLowerCase())) || AGENT_NODES[0];
-  targetNode.tokens += sum;
+  // Flash agent node box in grid
+  flashAgentNodeBox(agentName, sum);
 
-  activeParticles.push({
-    x: targetNode.x - 30,
-    y: targetNode.y,
-    targetX: targetNode.x,
-    targetY: targetNode.y,
-    progress: 0,
-    color: targetNode.color,
-  });
-
+  // Console log entry
   const consoleEl = document.getElementById("token-stream-console");
   if (consoleEl) {
     const timeStr = new Date().toLocaleTimeString();
@@ -1184,95 +1174,65 @@ function recordTokenTransfer(agentName, promptTokens = 280, completionTokens = 1
     consoleEl.appendChild(entry);
     consoleEl.scrollTop = consoleEl.scrollHeight;
   }
+
+  renderSvgTokenChart();
 }
 
-function renderTokenCanvases() {
-  const waveCanvas = document.getElementById("token-wave-canvas");
-  const meshCanvas = document.getElementById("token-mesh-canvas");
+function flashAgentNodeBox(agentName, tokens) {
+  const nameLower = (agentName || "").toLowerCase();
+  let key = "triage";
+  if (nameLower.includes("intel")) key = "threat_intel";
+  else if (nameLower.includes("corr")) key = "correlation";
+  else if (nameLower.includes("threat") && !nameLower.includes("intel")) key = "threat";
+  else if (nameLower.includes("benign")) key = "benign";
+  else if (nameLower.includes("impact") || nameLower.includes("business")) key = "business_impact";
+  else if (nameLower.includes("contain") || nameLower.includes("response")) key = "containment";
+  else if (nameLower.includes("coord")) key = "coordinator";
 
-  if (waveCanvas) {
-    const ctx = waveCanvas.getContext("2d");
-    const w = waveCanvas.width;
-    const h = waveCanvas.height;
-    ctx.clearRect(0, 0, w, h);
+  AGENT_TOKENS[key] = (AGENT_TOKENS[key] || 0) + tokens;
 
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
-    ctx.lineWidth = 1;
-    for (let y = 20; y < h; y += 30) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(w, y);
-      ctx.stroke();
-    }
+  let elemId = `node-${key}`;
+  let tokElemId = `node-tok-${key}`;
+  if (key === "threat_intel") tokElemId = "node-tok-intel";
+  if (key === "business_impact") tokElemId = "node-tok-impact";
+  if (key === "containment") tokElemId = "node-tok-containment";
 
-    ctx.beginPath();
-    ctx.strokeStyle = "#00e5ff";
-    ctx.lineWidth = 2.5;
-    ctx.shadowColor = "#00e5ff";
-    ctx.shadowBlur = 8;
+  const boxEl = document.getElementById(elemId);
+  const tokEl = document.getElementById(tokElemId);
 
-    const step = w / (tokenMetrics.history.length - 1);
-    const maxVal = Math.max(200, ...tokenMetrics.history);
+  if (tokEl) tokEl.textContent = `${AGENT_TOKENS[key]}t`;
 
-    tokenMetrics.history.forEach((val, i) => {
-      const x = i * step;
-      const y = h - 10 - (val / maxVal) * (h - 20);
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-    ctx.shadowBlur = 0;
+  if (boxEl) {
+    boxEl.classList.add("active-flash");
+    setTimeout(() => {
+      boxEl.classList.remove("active-flash");
+    }, 1200);
   }
+}
 
-  if (meshCanvas) {
-    const ctx = meshCanvas.getContext("2d");
-    const w = meshCanvas.width;
-    const h = meshCanvas.height;
-    ctx.clearRect(0, 0, w, h);
+function renderSvgTokenChart() {
+  const lineEl = document.getElementById("svg-line-path");
+  const fillEl = document.getElementById("svg-fill-path");
 
-    ctx.strokeStyle = "rgba(0, 229, 255, 0.15)";
-    ctx.lineWidth = 1;
-    for (let i = 0; i < AGENT_NODES.length - 1; i++) {
-      const n1 = AGENT_NODES[i];
-      const n2 = AGENT_NODES[i + 1];
-      ctx.beginPath();
-      ctx.moveTo(n1.x, n1.y);
-      ctx.lineTo(n2.x, n2.y);
-      ctx.stroke();
-    }
+  if (!lineEl || !fillEl) return;
 
-    for (let pIdx = activeParticles.length - 1; pIdx >= 0; pIdx--) {
-      const p = activeParticles[pIdx];
-      p.progress += 0.08;
-      const curX = p.x + (p.targetX - p.x) * p.progress;
-      const curY = p.y + (p.targetY - p.y) * p.progress;
+  const width = 360;
+  const height = 70;
+  const len = tokenMetrics.history.length;
+  const step = width / (len - 1);
+  const maxVal = Math.max(250, ...tokenMetrics.history);
 
-      ctx.fillStyle = p.color;
-      ctx.shadowColor = p.color;
-      ctx.shadowBlur = 10;
-      ctx.beginPath();
-      ctx.arc(curX, curY, 4, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
+  const points = tokenMetrics.history.map((val, idx) => {
+    const x = Math.round(idx * step);
+    const y = Math.round(height - 6 - (val / maxVal) * (height - 12));
+    return `${x},${y}`;
+  });
 
-      if (p.progress >= 1) {
-        activeParticles.splice(pIdx, 1);
-      }
-    }
+  const polylineStr = points.join(" ");
+  const pathStr = `M0,${height} L${polylineStr} L${width},${height} Z`;
 
-    AGENT_NODES.forEach((node) => {
-      ctx.fillStyle = node.color;
-      ctx.beginPath();
-      ctx.arc(node.x, node.y, 6, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.font = "9px 'JetBrains Mono', monospace";
-      ctx.fillStyle = "#aabbee";
-      ctx.fillText(node.label, node.x - 18, node.y - 10);
-    });
-  }
-
-  requestAnimationFrame(renderTokenCanvases);
+  lineEl.setAttribute("points", polylineStr);
+  fillEl.setAttribute("d", pathStr);
 }
 
 // ─── Initialisation ──────────────────────────────────────────────────────────
@@ -1300,8 +1260,17 @@ function init() {
   // Phase 2: severity filter
   severityFilter.addEventListener("change", handleSeverityFilter);
 
-  // Start Live Token Monitor canvas animation loop
-  renderTokenCanvases();
+  // Initial SVG Token Chart Render + 1.5s background pulse
+  renderSvgTokenChart();
+  setInterval(() => {
+    // Add minor active telemetry fluctuation to history
+    const lastVal = tokenMetrics.history[tokenMetrics.history.length - 1] || 140;
+    const variation = Math.floor(Math.random() * 21) - 10;
+    const newVal = Math.max(80, Math.min(300, lastVal + variation));
+    tokenMetrics.history.shift();
+    tokenMetrics.history.push(newVal);
+    renderSvgTokenChart();
+  }, 1200);
 }
 
 document.addEventListener("DOMContentLoaded", init);
