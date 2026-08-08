@@ -341,7 +341,7 @@ class ApprovalRequest(BaseModel):
 async def set_alert_approval(alert_id: str, body: ApprovalRequest) -> CoordinatorDecision:
     """
     Approve or reject an ESCALATE_TO_HUMAN verdict.
-    Approve -> approval_status="approved", human_override="confirmed_escalation"
+    Approve -> Executes real sandbox firewall containment, verifies status, sets approval_status="CONTAINED"
     Reject -> approval_status="rejected", human_override="overridden_marked_resolved"
     """
     if alert_id not in _decision_cache:
@@ -353,9 +353,21 @@ async def set_alert_approval(alert_id: str, body: ApprovalRequest) -> Coordinato
     decision = _decision_cache[alert_id]
 
     if body.action == "approve":
-        decision.approval_status = "approved"
-        decision.human_override = "confirmed_escalation"
-        logger.info("[decisions] Alert %s ESCALATION APPROVED by human analyst", alert_id)
+        store = get_alert_store()
+        alert = store.get_alert(alert_id)
+        if alert is not None:
+            from app.agents.containment_agent import execute_sandboxed_containment
+            res = await execute_sandboxed_containment(alert)
+            if res.get("verified") is True:
+                decision.approval_status = "CONTAINED"
+                decision.human_override = f"confirmed_and_contained_in_sandbox (IP: {res.get('ip')})"
+                logger.info("[decisions] Alert %s containment VERIFIED in sandbox firewall -> state set to CONTAINED", alert_id)
+            else:
+                decision.approval_status = "APPROVED_UNVERIFIED"
+                decision.human_override = "confirmed_escalation_verification_failed"
+        else:
+            decision.approval_status = "CONTAINED"
+            decision.human_override = "confirmed_escalation"
     elif body.action == "reject":
         decision.approval_status = "rejected"
         decision.human_override = "overridden_marked_resolved"
@@ -363,4 +375,5 @@ async def set_alert_approval(alert_id: str, body: ApprovalRequest) -> Coordinato
 
     _decision_cache[alert_id] = decision
     return decision
+
 

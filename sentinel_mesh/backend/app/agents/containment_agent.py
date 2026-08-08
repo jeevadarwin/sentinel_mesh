@@ -85,3 +85,21 @@ async def run_containment_agent(
         confidence=float(parsed.get("confidence", 0.85)),
         provider_used=llm_resp.provider_used,
     )
+
+
+async def execute_sandboxed_containment(alert: Alert) -> dict:
+    """
+    Executes real HTTP containment against the Sandbox Firewall Service after human approval.
+    Calls POST /block then verifies with GET /blocked/{ip} before advancing to CONTAINED status.
+    """
+    from app.enrichment.sandbox_client import execute_and_verify_block
+
+    target_ip = alert.source_ip if alert.source_ip else alert.dest_ip
+    logger.info("Executing post-approval sandbox containment action for IP %s", target_ip)
+
+    result = await execute_and_verify_block(
+        ip=target_ip,
+        reason=f"Human approved containment for Alert {alert.id} ({alert.signature})",
+    )
+    return result
+

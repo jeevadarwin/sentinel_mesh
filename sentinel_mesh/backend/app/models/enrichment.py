@@ -66,6 +66,18 @@ class EnrichmentEvidence(BaseModel):
         default="",
         description="Free-text note about API tier limits or data gaps.",
     )
+    country_code: str = Field(
+        default="",
+        description="Country code for the IP address.",
+    )
+    asn: str = Field(
+        default="",
+        description="Autonomous System Number or domain associated with IP.",
+    )
+    fallback_used: bool = Field(
+        default=False,
+        description="Indicates if static MITRE table fallback was used.",
+    )
     fetched_at: datetime = Field(
         ...,
         description="UTC timestamp when this enrichment record was fetched.",

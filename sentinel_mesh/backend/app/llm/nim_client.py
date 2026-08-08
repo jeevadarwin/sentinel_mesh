@@ -41,7 +41,11 @@ async def call_nim(
 
     The caller (provider.py) is responsible for deciding whether to fall back.
     """
+    if not settings.nim_api_key:
+        raise ValueError("NIM_API_KEY not configured — skipping NIM provider")
+
     messages = []
+
 
     if system_prompt:
         messages.append({"role": "system", "content": system_prompt})

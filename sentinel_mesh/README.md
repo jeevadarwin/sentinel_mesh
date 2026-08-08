@@ -94,7 +94,31 @@ python -m http.server 3000 --directory sentinel_mesh/frontend
 
 ---
 
+## 🗺️ V2 Roadmap & Enhancements
+
+Sentinel Mesh V2 is actively implementing the following structural enhancements:
+
+- 🌐 **Real Threat Intelligence Integration** (✅ **Completed**): Upgraded Threat Intel Agent to perform automated IOC extraction (source/dest IP, signature) and query AbuseIPDB with an in-memory TTL cache (3600s). *If the API is unconfigured, rate-limited, or fails, the agent gracefully falls back to the static MITRE ATT&CK lookup table with explicit logging and fallback flags so pipeline execution never degrades silently.*
+
+- 📦 **Structured, Validated Agent Outputs** (✅ **Completed**): Enforced unified `AgentVerdict` Pydantic schema across specialized agents with LLM output validation, retry-once correction upon malformed JSON, and deterministic Commander confidence gap (`conf_delta > 0.25`) disagreement detection.
+
+- 🛡️ **Sandboxed Containment Execution** (✅ **Completed**): Replaced static DB flags with a real HTTP integration to an isolated `sandbox_firewall` service (`/block`, `/blocked/{ip}`). Post-approval actions trigger a real `POST /block` request followed immediately by a `GET /blocked/{ip}` verification round-trip before updating case status to `CONTAINED`. *(Demonstrated against an isolated sandbox firewall service, not production infrastructure).*
+
+- 🧪 **Automated Test Coverage** (✅ **Completed**): Comprehensive pytest test suite created under `backend/tests/` covering high-stakes code paths (`test_approval_gate.py`, `test_containment.py`, `test_commander.py`, `test_threat_intel.py`, `test_pipeline.py`) using zero-cost mock/stub LLM clients.
+
+- 🚦 **Transparent Frontend State** (✅ **Completed**): Replaced silent fallback to sample data with a clear, persistent **"DEMO MODE — sample data, not live backend"** visual banner whenever backend connections are unreachable.
+
+---
+
+## ⚡ Known Limitations & Next Architectural Steps
+
+- **Durable Task Queue & In-Flight Concurrency**: Alert processing is currently orchestrated using in-memory `asyncio.create_task()` worker pools. While highly performant for low-to-medium throughput, in-flight alert state is lost if the backend process restarts during an active investigation. The next planned architectural milestone is integrating a durable Redis-backed task queue (such as ARQ) to ensure task persistence across process restarts, enable dedicated worker node scaling, and maintain strict connection pooling under high concurrent case loads.
+
+---
+
 ## ☁️ Live Cloud Demo
+
 
 View the live interactive application directly in your browser:  
 🔗 **[https://sentinel-mesh-app.netlify.app](https://sentinel-mesh-app.netlify.app)**
+

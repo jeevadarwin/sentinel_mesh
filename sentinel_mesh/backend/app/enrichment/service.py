@@ -56,22 +56,22 @@ def _private_evidence(alert_id: str, ip: str, role: str) -> EnrichmentEvidence:
 def _result_to_evidence(alert_id: str, result: dict, ip: str, role: str) -> EnrichmentEvidence:
     """
     Map an AbuseIPDBResult dict → EnrichmentEvidence.
-
-    On failure (result["ok"] == False), numeric fields are 0 and
-    limitations carries the error message so downstream agents can
-    reason about data availability gracefully.
     """
     return EnrichmentEvidence(
         alert_id=alert_id,
         source="AbuseIPDB",
         ip_address=ip,
         ip_role=role,
-        score=result["abuse_score"],
-        reports_count=result["reports_count"],
-        last_reported=result["last_reported"],
-        limitations=result["limitations"],
+        score=result.get("abuse_score", 0),
+        reports_count=result.get("reports_count", 0),
+        last_reported=result.get("last_reported", ""),
+        country_code=result.get("country_code", ""),
+        asn=result.get("asn", ""),
+        fallback_used=result.get("fallback_used", False),
+        limitations=result.get("limitations", ""),
         fetched_at=datetime.now(timezone.utc),
     )
+
 
 
 # ---------------------------------------------------------------------------
