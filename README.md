@@ -1,9 +1,16 @@
 # 🛡️ Sentinel Mesh — Autonomous 8-Agent SOC Intelligence Platform
 
 > **Live Deployment**: **[https://sentinel-mesh-app.netlify.app](https://sentinel-mesh-app.netlify.app)**  
-> **Repository**: [https://github.com/developerHarish2007/sentinel_mesh](https://github.com/developerHarish2007/sentinel_mesh)
+> **Repository**: [https://github.com/jeevadarwin/sentinel_mesh](https://github.com/jeevadarwin/sentinel_mesh)
 
 Sentinel Mesh is an enterprise-grade, autonomous multi-agent Security Operations Centre (SOC) platform designed to eliminate alert fatigue, stop single-model AI hallucinations, and execute human-gated threat containment.
+
+---
+
+## 👥 Team & Contributors
+
+- **Harish Aravinth B.S.S** ([@developerHarish2007](https://github.com/developerHarish2007)) — Lead System Architect & Core Developer
+- **Jeevadarwin** ([@jeevadarwin](https://github.com/jeevadarwin)) — Team Co-Contributor & Project Submitter
 
 ---
 
