@@ -1260,27 +1260,9 @@ function init() {
   // Phase 2: severity filter
   if (severityFilter) severityFilter.addEventListener("change", handleSeverityFilter);
 
-  // Panel Collapse Toggle
-  const btnTogglePanel = document.getElementById("btn-toggle-token-panel");
-  const tokenMonitorBody = document.getElementById("token-monitor-body");
-  if (btnTogglePanel && tokenMonitorBody) {
-    btnTogglePanel.addEventListener("click", () => {
-      const isCollapsed = tokenMonitorBody.classList.contains("collapsed");
-      tokenMonitorBody.classList.toggle("collapsed");
-      btnTogglePanel.textContent = isCollapsed ? "▼ Hide" : "▶ Show";
-    });
-  }
-
-  // Theme System Selector (Cyber, Aesthetic, Pitch Black, Moon White)
-  const themeSelector = document.getElementById("theme-selector");
-  // Set default theme to cyber on load
-  document.body.setAttribute("data-theme", "cyber");
-  if (themeSelector) {
-    themeSelector.value = "cyber";
-    themeSelector.addEventListener("change", (e) => {
-      document.body.setAttribute("data-theme", e.target.value);
-    });
-  }
+  // Panel Collapse Toggle and Theme Selector are now wired in inline
+  // script in index.html — see <script> block after app.js — so they
+  // work even if other parts of init() encounter errors.
 
   // Initial SVG Token Chart Render + 1.5s background pulse
   renderSvgTokenChart();

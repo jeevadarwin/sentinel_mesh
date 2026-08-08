@@ -17,7 +17,7 @@
     rel="stylesheet"
   />
 
-  <link rel="stylesheet" href="styles.css?v=3" />
+  <link rel="stylesheet" href="styles.css?v=4" />
 </head>
 <body>
 
@@ -271,6 +271,32 @@
     <span id="status-time"></span>
   </footer>
 
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
+
+  <!-- STANDALONE: Toggle + Theme — zero dependency on app.js init() -->
+  <script>
+    (function () {
+      // ── Panel collapse toggle ──────────────────────────────────────────
+      var btn = document.getElementById('btn-toggle-token-panel');
+      var body = document.getElementById('token-monitor-body');
+      if (btn && body) {
+        btn.addEventListener('click', function () {
+          var collapsed = body.classList.contains('collapsed');
+          body.classList.toggle('collapsed');
+          btn.textContent = collapsed ? '\u25bc Hide' : '\u25b6 Show';
+        });
+      }
+
+      // ── Theme switcher ─────────────────────────────────────────────────
+      document.body.setAttribute('data-theme', 'cyber');
+      var sel = document.getElementById('theme-selector');
+      if (sel) {
+        sel.value = 'cyber';
+        sel.addEventListener('change', function () {
+          document.body.setAttribute('data-theme', sel.value);
+        });
+      }
+    })();
+  </script>
 </body>
 </html>
