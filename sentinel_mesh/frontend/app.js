@@ -63,16 +63,28 @@ let selectedAlertId = null;
 
 // ─── Connection status helpers ───────────────────────────────────────────────
 
+function showDemoBanner() {
+  const banner = document.getElementById("demo-mode-banner");
+  if (banner) banner.style.display = "block";
+}
+
+function hideDemoBanner() {
+  const banner = document.getElementById("demo-mode-banner");
+  if (banner) banner.style.display = "none";
+}
+
 function setConnected(detail = "") {
   connDot.className = "conn-dot connected";
   connLabel.textContent = "Backend connected";
   statusBackendEl.textContent = `Backend: OK${detail ? " — " + detail : ""}`;
+  hideDemoBanner();
 }
 
 function setDisconnected(reason = "") {
   connDot.className = "conn-dot disconnected";
-  connLabel.textContent = "Backend unreachable";
+  connLabel.textContent = "Backend unreachable (DEMO MODE)";
   statusBackendEl.textContent = `Backend: OFFLINE${reason ? " (" + reason + ")" : ""}`;
+  showDemoBanner();
 }
 
 function setConnecting() {
@@ -80,6 +92,7 @@ function setConnecting() {
   connLabel.textContent = "Connecting…";
   statusBackendEl.textContent = "Backend: …";
 }
+
 
 // ─── Stream indicator helpers ────────────────────────────────────────────────
 
@@ -351,8 +364,10 @@ async function fetchAlerts() {
     alerts = await res.json();
   } catch (err) {
     console.warn("fetchAlerts backend unavailable, using fallback dataset:", err);
+    showDemoBanner();
     alerts = FALLBACK_ALERTS.filter(a => !severity || String(a.severity) === String(severity));
   }
+
 
   // Clear rendered IDs (re-render on filter change)
   renderedIds.clear();

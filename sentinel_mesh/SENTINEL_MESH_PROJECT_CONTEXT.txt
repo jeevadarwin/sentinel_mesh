@@ -1,0 +1,264 @@
+================================================================================
+                      SENTINEL MESH V2 — PROJECT CONTEXT & SPECIFICATION
+================================================================================
+
+1. PROJECT OVERVIEW & PURPOSE
+--------------------------------------------------------------------------------
+Sentinel Mesh is an Autonomous 8-Agent Security Operations Centre (SOC) Intelligence 
+Platform designed to automate real-time alert triage, threat enrichment, 
+multi-agent adversarial debate, human-in-the-loop (HITL) decision-making, and 
+sandboxed firewall containment.
+
+The platform ingests real Suricata IDS/IPS network security alerts (e.g. from 
+the WRCCDC 2018 dataset) and orchestrates an autonomous mesh of 8 specialized AI 
+agents that analyze, debate, quantify risk, and recommend response actions.
+
+Key Value Proposition:
+- Eliminates SOC alert fatigue through multi-perspective LLM debate.
+- Standardizes threat analysis using schema-validated Pydantic outputs.
+- Ensures fault tolerance via a multi-provider LLM fallback chain.
+- Provides real threat enrichment (AbuseIPDB with TTL caching & static MITRE fallback).
+- Implements active network containment via a standalone Sandbox Firewall.
+- Features a real-time Cyberpunk-themed telemetry dashboard powered by SSE (Server-Sent Events).
+
+
+2. ARCHITECTURE & TECHNOLOGY STACK
+--------------------------------------------------------------------------------
+Backend:
+- Language: Python 3.10+
+- Web Framework: FastAPI / Uvicorn (Asynchronous REST API + SSE)
+- Data Validation: Pydantic v2 (Strict schema enforcement)
+- HTTP Client: HTTPX (Async HTTP requests for LLM calls and enrichment)
+- Testing Framework: Pytest / Pytest-Asyncio
+
+Frontend:
+- Core Technologies: Vanilla HTML5, Vanilla JavaScript (ES6+), Vanilla CSS3
+- Design System: Custom Cyberpunk / Dark Mode aesthetic (CSS Variables, glassmorphism, micro-animations)
+- Typography: Google Fonts (Inter for UI, JetBrains Mono for telemetry/logs)
+- Data Transfer: EventSource SSE (Server-Sent Events) for real-time token telemetry & agent debate streaming
+- Dependencies: Zero external npm packages / zero build steps required
+
+Sandbox Firewall Service:
+- Standalone FastAPI application running on port 8002
+- In-memory active blocklist simulation (IP address containment API)
+
+
+3. THE 8-AGENT MESH TOPOLOGY BREAKDOWN
+--------------------------------------------------------------------------------
+The platform utilizes an 8-agent multi-perspective debate and resolution topology:
+
+1. Triage Agent (🔍):
+   - Primary Role: Initial alert parsing & urgency classification.
+   - Task: Extracts key indicators (Source IP, Destination IP, Alert Signature, Category) and assigns an Urgency Rating (LOW, MEDIUM, HIGH, CRITICAL).
+
+2. Threat Intel Agent (🌐):
+   - Primary Role: IOC Extraction & Threat Enrichment Analysis.
+   - Task: Extracts IOCs from Suricata alerts, queries AbuseIPDB (or static MITRE ATT&CK fallback table), evaluates IP confidence score, domain reputation, and associated MITRE TTPs.
+
+3. Correlation Agent (📊):
+   - Primary Role: Historical & Multi-Alert Contextual Analysis.
+   - Task: Correlates incoming alerts against past telemetry, detecting recurring attack patterns, lateral movement, or brute-force clusters.
+
+4. Threat Defense Advocate / Prosecutor (⚡):
+   - Primary Role: Malicious Prosecutor.
+   - Task: Builds the strongest possible argument that the alert represents an active, high-severity threat requiring urgent intervention.
+
+5. Benign Defense Advocate / Defense Attorney (🛡️):
+   - Primary Role: False-Positive Advocate.
+   - Task: Identifies potential benign explanations (misconfigurations, authorized security scans, benign admin activity) to prevent false positives.
+
+6. Business Impact Agent (💼):
+   - Primary Role: Asset & Operational Risk Assessor.
+   - Task: Evaluates the potential business blast radius, target asset criticality, data loss risk, and operational downtime impact.
+
+7. Containment / Response Agent (🚨):
+   - Primary Role: Remediation & Mitigation Specialist.
+   - Task: Generates actionable containment playbooks (e.g. Isolation, IP Block, Host Quarantine, Firewall Rule Addition) and assigns a Risk Level to response options.
+
+8. Commander / Coordinator Agent (⚖️):
+   - Primary Role: Debate Moderator & Final Decision Engine.
+   - Task: Reviews arguments from all agents, evaluates the deterministic confidence gap (|Threat_Conf - Benign_Conf| > 0.25), issues the final verdict (TRUE_POSITIVE, FALSE_POSITIVE, SUSPICIOUS), and routes high-risk cases to the Human-in-the-Loop Approval Gate.
+
+
+4. MULTI-LLM ORCHESTRATION & FALLBACK CHAIN
+--------------------------------------------------------------------------------
+Sentinel Mesh utilizes a fault-tolerant multi-provider LLM fallback orchestrator (`app/llm/provider.py`) to prevent service disruptions:
+
+Provider Priority Order:
+1. NVIDIA NIM (Primary — High performance / Low latency): `meta/llama-3.1-70b-instruct`
+2. Groq Cloud (Secondary — Fast free-tier cloud fallback): `llama-3.3-70b-versatile`
+3. Google Gemini (Tertiary — Free cloud provider): `gemini-1.5-flash`
+4. Ollama / LM Studio (Local Fallback — Fully offline capability): `gemma4:latest` / `local-model`
+
+Fault-Tolerance Mechanism:
+- If a provider is unconfigured (empty API key), rate-limited (HTTP 429), or times out, the orchestrator instantly logs a warning and advances to the next provider in the chain.
+
+
+5. THREAT INTELLIGENCE & ENRICHMENT ENGINE
+--------------------------------------------------------------------------------
+Module: `app/enrichment/`
+- `abuseipdb_client.py`: Queries AbuseIPDB v2 API (`GET /api/v2/check`).
+- In-Memory TTL Cache: Stores query results for 3600 seconds (1 hour) per IP address to conserve API quota.
+- Fallback System: If `ENRICHMENT_API_KEY` is missing or API call fails, gracefully falls back to a curated static MITRE ATT&CK lookup table, flagging `fallback_used = True`.
+- Extracted Fields: `abuse_score`, `reports_count`, `country_code`, `asn`, `mitre_tactics`, `mitre_techniques`, `limitations`.
+
+
+6. SANDBOXED CONTAINMENT & HITL APPROVAL GATE
+--------------------------------------------------------------------------------
+Standalone Firewall Service: `sandbox_firewall/main.py` (Port 8002)
+- Endpoints:
+  - `POST /block` : Adds an IP address to active firewall blocklist.
+  - `GET /blocked/{ip}` : Verifies if an IP is currently blocked.
+  - `GET /status` : Returns full firewall state & count of active blocks.
+
+Approval Gate Flow (`app/routers/decisions.py`):
+1. When the Commander recommends containment (e.g., Block IP), the case is assigned status `PENDING_APPROVAL`.
+2. A SOC analyst reviews the recommendation in the UI and clicks "Approve".
+3. The backend executes `sandbox_client.post_block(ip)` followed by an immediate `sandbox_client.verify_blocked(ip)` verification round-trip.
+4. Upon positive verification, the alert status updates to `CONTAINED`.
+
+
+7. FRONTEND DASHBOARD & TELEMETRY ENGINE
+--------------------------------------------------------------------------------
+Located in `sentinel_mesh/frontend/`:
+- `index.html`: Main SOC Control Center layout.
+- `styles.css`: Cyberpunk styling tokens, flexbox/grid layout, dark palette.
+- `app.js`: Connects to backend SSE endpoints (`/alerts/stream`), handles real-time token telemetry chart animations, agent node status flashing, alert list updates, and detail panel rendering.
+
+
+8. FILE & DIRECTORY STRUCTURE MAP
+--------------------------------------------------------------------------------
+sentinel_mesh/
+├── CONTRIBUTING.md                          # Git commit & contribution standards (Added V2)
+├── README.md                                # Root documentation & V2 roadmap
+├── requirements.txt                         # Python dependencies
+└── sentinel_mesh/
+    ├── README.md                            # Inner repository README
+    ├── CONTRIBUTING.md                      # Inner commit guidelines
+    ├── backend/
+    │   ├── .env                             # Environment variables configuration
+    │   ├── requirements.txt                 # Backend Python dependencies
+    │   ├── app/
+    │   │   ├── main.py                      # FastAPI application entrypoint
+    │   │   ├── config.py                    # Pydantic BaseSettings config
+    │   │   ├── agents/                      # The 8 AI Agent Implementations
+    │   │   │   ├── triage_agent.py
+    │   │   │   ├── threat_intel_agent.py
+    │   │   │   ├── correlation_agent.py
+    │   │   │   ├── threat_argument_agent.py
+    │   │   │   ├── benign_argument_agent.py
+    │   │   │   ├── impact_agent.py
+    │   │   │   ├── containment_agent.py
+    │   │   │   ├── coordinator.py
+    │   │   │   └── validator.py             # Schema output validator & retry logic (Added V2)
+    │   │   ├── enrichment/                  # Threat Intel & Sandbox Clients
+    │   │   │   ├── abuseipdb_client.py      # AbuseIPDB API + TTL Cache + MITRE fallback
+    │   │   │   ├── sandbox_client.py        # Sandbox Firewall HTTP Client (Added V2)
+    │   │   │   └── service.py               # Enrichment orchestrator
+    │   │   ├── llm/                         # Multi-LLM Provider System
+    │   │   │   ├── provider.py              # Fallback orchestrator
+    │   │   │   ├── nim_client.py            # NVIDIA NIM client
+    │   │   │   ├── gemini_client.py         # Google Gemini client
+    │   │   │   ├── groq_client.py           # Groq client
+    │   │   │   ├── ollama_client.py         # Ollama client
+    │   │   │   └── lmstudio_client.py       # LM Studio client
+    │   │   ├── models/                      # Pydantic Schemas
+    │   │   │   ├── alert.py
+    │   │   │   ├── agent_output.py          # AgentVerdict Pydantic model (Added V2)
+    │   │   │   ├── enrichment.py            # EnrichmentEvidence model
+    │   │   │   └── decision.py
+    │   │   └── routers/                     # REST API Routes
+    │   │       ├── alerts.py
+    │   │       ├── decisions.py
+    │   │       └── health.py
+    │   └── tests/                           # Pytest Test Suite (Added V2)
+    │       ├── test_threat_intel.py
+    │       ├── test_commander.py
+    │       └── test_approval_gate.py
+    ├── frontend/                            # Web UI Dashboard
+    │   ├── index.html                       # HTML5 Dashboard Layout
+    │   ├── styles.css                       # Vanilla CSS Cyberpunk Styling
+    │   └── app.js                           # Dashboard Logic & SSE Telemetry
+    └── sandbox_firewall/                    # Standalone Sandbox Firewall (Added V2)
+        └── main.py                          # FastAPI Mock Firewall Service (Port 8002)
+
+
+================================================================================
+      9. RECENTLY ADDED & MODIFIED IN THIS SESSION (V2 UPGRADE HIGHLIGHTS)
+================================================================================
+
+[HIGHLIGHT 1: BACKEND CONFIG & ERROR RECOVERY FIXES]
+- Problem: Backend crashed on boot with Pydantic `ValidationError` because `nim_api_key`, 
+  `nim_base_url`, and `nim_model` were required fields with no defaults when `.env` did 
+  not exist.
+- Resolution (`app/config.py`): Converted NIM settings to optional fields with empty 
+  string defaults.
+- Added Early Exit (`app/llm/nim_client.py`): Guarded `call_nim()` so if `nim_api_key` 
+  is empty, it immediately raises a ValueError allowing `provider.py` to seamlessly 
+  fall back to Groq/Gemini/Ollama without network timeouts.
+- Configured Environment (`backend/.env`): Created a fully populated `.env` file 
+  including valid `GROQ_API_KEY` and `GEMINI_API_KEY` credentials.
+
+[HIGHLIGHT 2: PHASE 0 — GUARDRAILS & STANDARDS]
+- Created `CONTRIBUTING.md` (root and inner directories) defining explicit commit 
+  message standards (`feat:`, `fix:`, `test:`, `docs:`).
+- Added a comprehensive "V2 Roadmap & Enhancements" section to both `README.md` files.
+
+[HIGHLIGHT 3: PHASE 1 — REAL THREAT INTEL & CACHING ENGINE]
+- Extended `EnrichmentEvidence` model (`app/models/enrichment.py`) with `country_code`, 
+  `asn`, and `fallback_used` fields.
+- Implemented 1-hour TTL in-memory cache (`_IP_CACHE`) in `abuseipdb_client.py`.
+- Upgraded `threat_intel_agent.py` to perform explicit IOC extraction from Suricata 
+  alerts (`source_ip`, `dest_ip`, `signature`) and format evidence output with country/ASN.
+
+[HIGHLIGHT 4: PHASE 2 — STRUCTURED AGENT OUTPUTS & CONFIDENCE GAP]
+- Introduced `AgentVerdict` Pydantic model (`app/models/agent_output.py`) for standardized 
+  agent output validation.
+- Created `app/agents/validator.py` with LLM response JSON parsing and single-attempt 
+  retry correction logic.
+- Updated `coordinator.py` to enforce deterministic confidence-gap evaluation: 
+  `abs(threat_arg.confidence - benign_arg.confidence) > 0.25`.
+
+[HIGHLIGHT 5: PHASE 3 — STANDALONE SANDBOX FIREWALL CONTAINMENT]
+- Created standalone `sandbox_firewall/main.py` FastAPI service running on port 8002 
+  with in-memory IP blocklist management.
+- Implemented `sandbox_client.py` HTTP client (`post_block`, `verify_blocked`).
+- Updated approval endpoint in `app/routers/decisions.py` to execute containment 
+  blocking upon human analyst approval and transition alert status to `CONTAINED`.
+
+[HIGHLIGHT 6: PHASE 4 — AUTOMATED TEST SUITE]
+- Created pytest tests in `tests/`:
+  - `test_threat_intel.py`: Tests IOC extraction and AbuseIPDB fallback.
+  - `test_commander.py`: Tests deterministic confidence gap decision logic.
+  - `test_approval_gate.py`: Tests HITL approval and Sandbox containment execution.
+
+[HIGHLIGHT 7: FRONTEND DEMO BANNER & AGENT MESH ALIGNMENT]
+- Removed `#demo-mode-banner` from `frontend/index.html`.
+- Updated `.agent-mesh-grid` in `frontend/styles.css`:
+  - Fixed row/column heights using `grid-template-columns: repeat(4, minmax(0, 1fr))` 
+    and `grid-template-rows: repeat(2, 1fr)`.
+  - Set `height: auto` and `overflow: hidden`, perfectly aligning the 8 agent boxes into a 
+    clean 4x2 grid with zero scrollbars or card clipping.
+
+
+================================================================================
+10. HOW TO RUN THE PLATFORM
+================================================================================
+
+1. Start the Backend API Server:
+   cd c:\Users\jeeva\OneDrive\Desktop\3\sentinel_mesh\sentinel_mesh\backend
+   python -m uvicorn app.main:app --port 8001 --reload
+
+2. Start the Standalone Sandbox Firewall (Optional for Containment Demo):
+   cd c:\Users\jeeva\OneDrive\Desktop\3\sentinel_mesh\sentinel_mesh\sandbox_firewall
+   python -m uvicorn main:app --port 8002 --reload
+
+3. Start the Frontend Web Dashboard:
+   cd c:\Users\jeeva\OneDrive\Desktop\3\sentinel_mesh\sentinel_mesh\frontend
+   python -m http.server 3000
+
+4. Access Web Applications:
+   - SOC Control Center: http://localhost:3000
+   - Backend Swagger API Docs: http://localhost:8001/docs
+   - Sandbox Firewall Docs: http://localhost:8002/docs
+================================================================================

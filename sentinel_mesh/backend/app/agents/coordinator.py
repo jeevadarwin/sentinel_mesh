@@ -114,15 +114,30 @@ async def decide(
         provider_chain=coord_chain,
     )
 
+    # ── Deterministic Confidence-Gap Logic (V2) ─────────────────────────
+    conf_delta = abs(threat_arg.confidence - benign_arg.confidence)
+    logger.info(
+        "Commander confidence-gap evaluation: conf_delta=%.3f (Threat: %.2f, Benign: %.2f)",
+        conf_delta, threat_arg.confidence, benign_arg.confidence,
+    )
+
     parsed = _parse_json_response(llm_resp.content)
 
-    verdict_raw = str(parsed.get("verdict", "")).upper()
-    if "TRUE" in verdict_raw or verdict_raw == "TRUE_POSITIVE":
-        verdict = "TRUE_POSITIVE"
-    elif "FALSE" in verdict_raw or verdict_raw == "FALSE_POSITIVE":
-        verdict = "FALSE_POSITIVE"
-    else:
+    if conf_delta > 0.25:
+        logger.warning(
+            "Commander flagged significant disagreement (conf_delta=%.2f > 0.25) — overriding to ESCALATE_TO_HUMAN",
+            conf_delta,
+        )
         verdict = "ESCALATE_TO_HUMAN"
+    else:
+        verdict_raw = str(parsed.get("verdict", "")).upper()
+        if "TRUE" in verdict_raw or verdict_raw == "TRUE_POSITIVE":
+            verdict = "TRUE_POSITIVE"
+        elif "FALSE" in verdict_raw or verdict_raw == "FALSE_POSITIVE":
+            verdict = "FALSE_POSITIVE"
+        else:
+            verdict = "ESCALATE_TO_HUMAN"
+
 
     conf = parsed.get("confidence", 0.85)
     try:

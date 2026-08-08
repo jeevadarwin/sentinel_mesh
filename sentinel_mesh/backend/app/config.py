@@ -24,15 +24,15 @@ class Settings(BaseSettings):
     # NIM (NVIDIA Inference Microservices) — primary LLM provider          #
     # ------------------------------------------------------------------ #
     nim_api_key: str = Field(
-        ...,
-        description="NVIDIA NIM API key.  Required for primary LLM provider.",
+        default="",
+        description="NVIDIA NIM API key. Leave empty to skip NIM and fall back to Gemini/Groq/Ollama.",
     )
     nim_base_url: str = Field(
-        ...,
+        default="https://integrate.api.nvidia.com/v1",
         description="Base URL for the NIM OpenAI-compatible endpoint.",
     )
     nim_model: str = Field(
-        ...,
+        default="meta/llama-3.1-70b-instruct",
         description="NIM model identifier, e.g. meta/llama-3.1-70b-instruct.",
     )
 

@@ -6,7 +6,33 @@ from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
 
+class AgentVerdict(BaseModel):
+    """
+    Standardized, schema-validated output shared across all agents.
+    """
+
+    verdict: Literal["malicious", "benign", "uncertain"] = Field(
+        ...,
+        description="Core verdict stance of the agent.",
+    )
+    confidence: float = Field(
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Self-assessed confidence level (0.0 to 1.0).",
+    )
+    evidence: list[str] = Field(
+        default_factory=list,
+        description="Key supporting evidence points.",
+    )
+    recommended_action: Literal["block", "isolate", "monitor", "none"] = Field(
+        default="none",
+        description="Action recommended by the agent.",
+    )
+
+
 class AgentArgument(BaseModel):
+
     """The structured argument output by Threat Agent or Benign Agent."""
 
     agent_name: str = Field(
