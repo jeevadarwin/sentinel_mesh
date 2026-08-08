@@ -1915,7 +1915,110 @@ canvas.token-chart-canvas {
   font-family: var(--font-mono);
   font-size: 9px;
   color: var(--colour-accent);
+}/* ── Collapsible Panel ─────────────────────────────────────────────────── */
+
+.token-monitor-body {
+  /* Default: visible. No display:none so nothing hides on page load */
 }
 
+.token-monitor-body.collapsed {
+  display: none !important;
+}
 
+/* When collapsed, remove the bottom border from header */
+.token-monitor-panel:has(.token-monitor-body.collapsed) .token-monitor-header {
+  margin-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* ── Moon White theme overrides for high-contrast legibility ────────────── */
+body[data-theme="moon-white"] .alert-card {
+  background: #f8fafc;
+  border-left-color: #cbd5e1;
+}
+
+body[data-theme="moon-white"] .alert-card:hover {
+  background: #e2e8f0;
+}
+
+body[data-theme="moon-white"] .alert-card.selected {
+  box-shadow: 0 0 0 1px #2563eb, 0 2px 16px rgba(37, 99, 235, 0.12);
+}
+
+body[data-theme="moon-white"] .token-monitor-panel {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+body[data-theme="moon-white"] .token-kpi-box {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+}
+
+body[data-theme="moon-white"] .token-kpi-val {
+  color: #0f172a;
+}
+
+body[data-theme="moon-white"] .token-canvas-box {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+body[data-theme="moon-white"] .agent-node-box {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+body[data-theme="moon-white"] .token-stream-console {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  color: #334155;
+}
+
+body[data-theme="moon-white"] .panel {
+  background: #ffffff;
+}
+
+body[data-theme="moon-white"] .panel-header {
+  border-bottom-color: #e2e8f0;
+}
+
+body[data-theme="moon-white"] .alert-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+
+body[data-theme="moon-white"] .status-bar {
+  background: #ffffff;
+  border-top-color: #e2e8f0;
+}
+
+body[data-theme="moon-white"] .app-header {
+  background: #ffffff;
+  border-bottom-color: #e2e8f0;
+}
+
+body[data-theme="moon-white"] .sev-badge.sev-critical {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: rgba(185, 28, 28, 0.4);
+}
+
+body[data-theme="moon-white"] .sev-badge.sev-high {
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: rgba(194, 65, 12, 0.4);
+}
+
+body[data-theme="moon-white"] .sev-badge.sev-medium {
+  background: #fefce8;
+  color: #a16207;
+  border-color: rgba(161, 98, 7, 0.4);
+}
+
+body[data-theme="moon-white"] .sev-badge.sev-low {
+  background: #f0fdf4;
+  color: #15803d;
+  border-color: rgba(21, 128, 61, 0.4);
+}
 
