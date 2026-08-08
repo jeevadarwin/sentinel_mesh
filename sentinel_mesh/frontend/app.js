@@ -1253,12 +1253,12 @@ function init() {
   // Phase 2: open SSE connection for real-time updates
   connectRealtimeFeed();
 
-  // Phase 2: button handlers
-  btnStart.addEventListener("click", handleStartFeed);
-  btnStop.addEventListener("click", handleStopFeed);
+  // Phase 2: button handlers (guard null — elements may not exist in all layouts)
+  if (btnStart) btnStart.addEventListener("click", handleStartFeed);
+  if (btnStop) btnStop.addEventListener("click", handleStopFeed);
 
   // Phase 2: severity filter
-  severityFilter.addEventListener("change", handleSeverityFilter);
+  if (severityFilter) severityFilter.addEventListener("change", handleSeverityFilter);
 
   // Panel Collapse Toggle
   const btnTogglePanel = document.getElementById("btn-toggle-token-panel");
