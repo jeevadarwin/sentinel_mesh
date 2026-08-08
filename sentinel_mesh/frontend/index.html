@@ -107,11 +107,72 @@
       </div>
     </section>
 
-    <!-- RIGHT PANEL — Alert detail -->
+    <!-- RIGHT PANEL — Alert detail & Live Token Monitor -->
     <section class="panel panel-right" aria-label="Alert detail">
       <div class="panel-header">
-        <h2 class="panel-title">Alert Detail</h2>
+        <h2 class="panel-title">Alert Detail & AI Investigation Trace</h2>
         <span class="panel-badge panel-badge-detail" id="detail-severity-badge" style="display:none;"></span>
+      </div>
+
+      <!-- LIVE AI TOKEN TRANSFER & MESH INTELLIGENCE MONITOR WIDGET -->
+      <div class="token-monitor-panel" id="token-monitor-panel">
+        <div class="token-monitor-header">
+          <div class="token-monitor-title">
+            <span class="token-pulse-dot"></span>
+            ⚡ LIVE AI TOKEN TRANSFER & MESH INTELLIGENCE MONITOR
+          </div>
+          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--colour-accent);">
+            STREAM: <span id="token-stream-status">ACTIVE SSE STREAM</span>
+          </div>
+        </div>
+
+        <div class="token-kpi-grid">
+          <div class="token-kpi-box">
+            <span class="token-kpi-val highlight" id="token-kpi-total">0</span>
+            <span class="token-kpi-lbl">Total Tokens</span>
+          </div>
+          <div class="token-kpi-box">
+            <span class="token-kpi-val" id="token-kpi-prompt">0</span>
+            <span class="token-kpi-lbl">Prompt Input</span>
+          </div>
+          <div class="token-kpi-box">
+            <span class="token-kpi-val" id="token-kpi-completion">0</span>
+            <span class="token-kpi-lbl">LLM Output</span>
+          </div>
+          <div class="token-kpi-box">
+            <span class="token-kpi-val highlight" id="token-kpi-rate">0 t/s</span>
+            <span class="token-kpi-lbl">Throughput</span>
+          </div>
+          <div class="token-kpi-box">
+            <span class="token-kpi-val success" id="token-kpi-saved">$0.00</span>
+            <span class="token-kpi-lbl">Air-Gap Saved</span>
+          </div>
+        </div>
+
+        <div class="token-canvas-wrapper">
+          <div class="token-canvas-box">
+            <div class="token-canvas-title">
+              <span>📊 Real-Time Token Transfer Wave Graph</span>
+              <span style="color: var(--colour-accent);">Tokens / Sec</span>
+            </div>
+            <canvas id="token-wave-canvas" class="token-chart-canvas" width="360" height="110"></canvas>
+          </div>
+
+          <div class="token-canvas-box">
+            <div class="token-canvas-title">
+              <span>🌐 8-Agent Mesh Particle Transfer Topology</span>
+              <span style="color: #00e676;">Active Node Flow</span>
+            </div>
+            <canvas id="token-mesh-canvas" class="token-chart-canvas" width="360" height="110"></canvas>
+          </div>
+        </div>
+
+        <div class="token-stream-console" id="token-stream-console">
+          <div class="token-log-entry">
+            <span class="token-log-time">[00:00:00]</span>
+            <span>Awaiting live alert debate streaming... Token transfer telemetry ready.</span>
+          </div>
+        </div>
       </div>
 
       <!-- #alert-detail — populated when an alert is selected -->

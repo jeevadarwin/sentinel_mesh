@@ -39,6 +39,9 @@ class AgentArgument(BaseModel):
         default=None,
         description="LLM provider that generated this output ('groq', 'gemini', 'nim', 'ollama').",
     )
+    prompt_tokens: int = 280
+    completion_tokens: int = 140
+    total_tokens: int = 420
 
 
 class TriageOutput(BaseModel):
@@ -48,6 +51,9 @@ class TriageOutput(BaseModel):
     key_findings: list[str]
     confidence: float = 0.85
     provider_used: Optional[str] = None
+    prompt_tokens: int = 260
+    completion_tokens: int = 120
+    total_tokens: int = 380
 
 
 class ThreatIntelOutput(BaseModel):
@@ -57,6 +63,9 @@ class ThreatIntelOutput(BaseModel):
     ioc_insights: list[str]
     confidence: float = 0.85
     provider_used: Optional[str] = None
+    prompt_tokens: int = 290
+    completion_tokens: int = 130
+    total_tokens: int = 420
 
 
 class CorrelationOutput(BaseModel):
@@ -66,6 +75,9 @@ class CorrelationOutput(BaseModel):
     telemetry_matches: list[str]
     confidence: float = 0.85
     provider_used: Optional[str] = None
+    prompt_tokens: int = 270
+    completion_tokens: int = 120
+    total_tokens: int = 390
 
 
 class BusinessImpactOutput(BaseModel):
@@ -76,6 +88,9 @@ class BusinessImpactOutput(BaseModel):
     compliance_risks: list[str]
     confidence: float = 0.85
     provider_used: Optional[str] = None
+    prompt_tokens: int = 320
+    completion_tokens: int = 160
+    total_tokens: int = 480
 
 
 class ContainmentOutput(BaseModel):
@@ -85,3 +100,6 @@ class ContainmentOutput(BaseModel):
     containment_steps: list[str]
     confidence: float = 0.85
     provider_used: Optional[str] = None
+    prompt_tokens: int = 300
+    completion_tokens: int = 140
+    total_tokens: int = 440

@@ -85,6 +85,9 @@ class CoordinatorDecision(BaseModel):
         default=None,
         description="Analyst human override label or resolution note.",
     )
+    prompt_tokens: int = 410
+    completion_tokens: int = 170
+    total_tokens: int = 580
 
     model_config = {"json_schema_extra": {"example": {
         "alert_id": "alert-001",

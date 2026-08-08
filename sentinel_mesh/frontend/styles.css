@@ -1580,5 +1580,155 @@ body {
   background: rgba(255, 215, 0, 0.08);
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* LIVE AI TOKEN TRANSFER & MESH INTELLIGENCE MONITOR STYLING                 */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+.token-monitor-panel {
+  background: rgba(13, 18, 28, 0.95);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(0, 229, 255, 0.05);
+}
+
+.token-monitor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+  padding-bottom: 10px;
+}
+
+.token-monitor-title {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: var(--colour-accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.token-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--colour-accent);
+  box-shadow: 0 0 10px var(--colour-accent);
+  animation: pulse-glow 1.2s infinite alternate;
+}
+
+@keyframes pulse-glow {
+  from { opacity: 0.4; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1.3); }
+}
+
+.token-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.token-kpi-box {
+  background: rgba(18, 25, 38, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.token-kpi-val {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.3);
+}
+
+.token-kpi-val.highlight {
+  color: var(--colour-accent);
+}
+
+.token-kpi-val.success {
+  color: #00e676;
+}
+
+.token-kpi-lbl {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--colour-text-muted);
+  margin-top: 2px;
+}
+
+/* Dual Canvas Layout: Wave Chart + Node Particle Flow */
+.token-canvas-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.token-canvas-box {
+  background: #080b11;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 10px;
+  position: relative;
+}
+
+.token-canvas-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--colour-text-muted);
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+}
+
+canvas.token-chart-canvas {
+  width: 100%;
+  height: 110px;
+  display: block;
+}
+
+/* Console log output */
+.token-stream-console {
+  background: #05070a;
+  border: 1px solid rgba(0, 229, 255, 0.15);
+  border-radius: 6px;
+  padding: 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  max-height: 100px;
+  overflow-y: auto;
+  color: #8899aa;
+  line-height: 1.6;
+}
+
+.token-log-entry {
+  display: flex;
+  gap: 8px;
+}
+
+.token-log-time {
+  color: #445566;
+}
+
+.token-log-agent {
+  color: var(--colour-accent);
+  font-weight: 600;
+}
+
+.token-log-count {
+  color: #00e676;
+  font-weight: 700;
+}
+
 
 

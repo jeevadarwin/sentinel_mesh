@@ -714,6 +714,7 @@ async function runInvestigation(alertId) {
         confidence: data.confidence,
         provider_used: data.provider_used,
       }));
+      recordTokenTransfer("TriageAgent", data.prompt_tokens || 260, data.completion_tokens || 120);
     } catch (err) { console.warn("Triage parse error:", err); }
   });
 
@@ -731,6 +732,7 @@ async function runInvestigation(alertId) {
         confidence: data.confidence,
         provider_used: data.provider_used,
       }));
+      recordTokenTransfer("ThreatIntelAgent", data.prompt_tokens || 290, data.completion_tokens || 130);
     } catch (err) { console.warn("Threat Intel parse error:", err); }
   });
 
@@ -747,6 +749,7 @@ async function runInvestigation(alertId) {
         confidence: data.confidence,
         provider_used: data.provider_used,
       }));
+      recordTokenTransfer("CorrelationAgent", data.prompt_tokens || 270, data.completion_tokens || 120);
     } catch (err) { console.warn("Correlation parse error:", err); }
   });
 
@@ -758,6 +761,7 @@ async function runInvestigation(alertId) {
       renderSummaryLists(threatBody, threatPoints, benignBody, benignPoints);
 
       bubblesGrid.appendChild(renderAgentBubble(arg));
+      recordTokenTransfer("ThreatAgent", arg.prompt_tokens || 340, arg.completion_tokens || 170);
     } catch (err) { console.warn("Threat arg parse error:", err); }
   });
 
@@ -768,6 +772,7 @@ async function runInvestigation(alertId) {
       renderSummaryLists(threatBody, threatPoints, benignBody, benignPoints);
 
       bubblesGrid.appendChild(renderAgentBubble(arg));
+      recordTokenTransfer("BenignAgent", arg.prompt_tokens || 310, arg.completion_tokens || 150);
     } catch (err) { console.warn("Benign arg parse error:", err); }
   });
 
@@ -785,6 +790,7 @@ async function runInvestigation(alertId) {
         confidence: data.confidence,
         provider_used: data.provider_used,
       }));
+      recordTokenTransfer("BusinessImpactAgent", data.prompt_tokens || 320, data.completion_tokens || 160);
     } catch (err) { console.warn("Business impact parse error:", err); }
   });
 
@@ -801,6 +807,7 @@ async function runInvestigation(alertId) {
         confidence: data.confidence,
         provider_used: data.provider_used,
       }));
+      recordTokenTransfer("ContainmentAgent", data.prompt_tokens || 300, data.completion_tokens || 140);
     } catch (err) { console.warn("Containment parse error:", err); }
   });
 
@@ -813,6 +820,7 @@ async function runInvestigation(alertId) {
 
       const verdictCard = renderVerdictCard(decision);
       verdictSlot.appendChild(verdictCard);
+      recordTokenTransfer("CoordinatorAgent", decision.prompt_tokens || 410, decision.completion_tokens || 170);
     } catch (err) {
       console.warn("Failed to parse verdict:", err);
     } finally {
@@ -1100,6 +1108,173 @@ async function handleApproval(alertId, action) {
   }
 }
 
+// ─── Live Token Transfer & Mesh Telemetry Engine ────────────────────────────────
+
+let tokenMetrics = {
+  totalPrompt: 0,
+  totalCompletion: 0,
+  totalTransferred: 0,
+  history: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  lastTimestamp: Date.now(),
+};
+
+const AGENT_NODES = [
+  { id: "triage", label: "Triage", x: 40, y: 35, tokens: 0, color: "#ffb703" },
+  { id: "threat_intel", label: "ThreatIntel", x: 120, y: 35, tokens: 0, color: "#69f0ae" },
+  { id: "correlation", label: "Correlation", x: 200, y: 35, tokens: 0, color: "#00e5ff" },
+  { id: "threat", label: "ThreatAgent", x: 280, y: 35, tokens: 0, color: "#ff5252" },
+  { id: "benign", label: "BenignAgent", x: 80, y: 85, tokens: 0, color: "#00e676" },
+  { id: "business_impact", label: "ImpactAgent", x: 160, y: 85, tokens: 0, color: "#ffab00" },
+  { id: "containment", label: "Containment", x: 240, y: 85, tokens: 0, color: "#e040fb" },
+  { id: "coordinator", label: "Coordinator", x: 320, y: 85, tokens: 0, color: "#ffd700" }
+];
+
+let activeParticles = [];
+
+function recordTokenTransfer(agentName, promptTokens = 280, completionTokens = 140) {
+  const sum = promptTokens + completionTokens;
+  tokenMetrics.totalPrompt += promptTokens;
+  tokenMetrics.totalCompletion += completionTokens;
+  tokenMetrics.totalTransferred += sum;
+
+  const now = Date.now();
+  const dt = Math.max(0.5, (now - tokenMetrics.lastTimestamp) / 1000);
+  tokenMetrics.lastTimestamp = now;
+  const rate = Math.round(sum / dt);
+
+  tokenMetrics.history.shift();
+  tokenMetrics.history.push(rate);
+
+  const elTotal = document.getElementById("token-kpi-total");
+  const elPrompt = document.getElementById("token-kpi-prompt");
+  const elComp = document.getElementById("token-kpi-completion");
+  const elRate = document.getElementById("token-kpi-rate");
+  const elSaved = document.getElementById("token-kpi-saved");
+
+  if (elTotal) elTotal.textContent = tokenMetrics.totalTransferred.toLocaleString();
+  if (elPrompt) elPrompt.textContent = tokenMetrics.totalPrompt.toLocaleString();
+  if (elComp) elComp.textContent = tokenMetrics.totalCompletion.toLocaleString();
+  if (elRate) elRate.textContent = `${rate} t/s`;
+  if (elSaved) elSaved.textContent = `$${(tokenMetrics.totalTransferred * 0.000015).toFixed(3)}`;
+
+  const targetNode = AGENT_NODES.find(n => n.id.toLowerCase().includes((agentName || "").toLowerCase()) || agentName.toLowerCase().includes(n.id.toLowerCase())) || AGENT_NODES[0];
+  targetNode.tokens += sum;
+
+  activeParticles.push({
+    x: targetNode.x - 30,
+    y: targetNode.y,
+    targetX: targetNode.x,
+    targetY: targetNode.y,
+    progress: 0,
+    color: targetNode.color,
+  });
+
+  const consoleEl = document.getElementById("token-stream-console");
+  if (consoleEl) {
+    const timeStr = new Date().toLocaleTimeString();
+    const entry = document.createElement("div");
+    entry.className = "token-log-entry";
+    entry.innerHTML = `
+      <span class="token-log-time">[${timeStr}]</span>
+      <span class="token-log-agent">${escHtml(agentName)}</span>
+      <span>transferred</span>
+      <span class="token-log-count">${sum} Tokens</span>
+      <span style="color:#556677;">(In: ${promptTokens} | Out: ${completionTokens})</span>
+    `;
+    consoleEl.appendChild(entry);
+    consoleEl.scrollTop = consoleEl.scrollHeight;
+  }
+}
+
+function renderTokenCanvases() {
+  const waveCanvas = document.getElementById("token-wave-canvas");
+  const meshCanvas = document.getElementById("token-mesh-canvas");
+
+  if (waveCanvas) {
+    const ctx = waveCanvas.getContext("2d");
+    const w = waveCanvas.width;
+    const h = waveCanvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+    ctx.lineWidth = 1;
+    for (let y = 20; y < h; y += 30) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+      ctx.stroke();
+    }
+
+    ctx.beginPath();
+    ctx.strokeStyle = "#00e5ff";
+    ctx.lineWidth = 2.5;
+    ctx.shadowColor = "#00e5ff";
+    ctx.shadowBlur = 8;
+
+    const step = w / (tokenMetrics.history.length - 1);
+    const maxVal = Math.max(200, ...tokenMetrics.history);
+
+    tokenMetrics.history.forEach((val, i) => {
+      const x = i * step;
+      const y = h - 10 - (val / maxVal) * (h - 20);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  if (meshCanvas) {
+    const ctx = meshCanvas.getContext("2d");
+    const w = meshCanvas.width;
+    const h = meshCanvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    ctx.strokeStyle = "rgba(0, 229, 255, 0.15)";
+    ctx.lineWidth = 1;
+    for (let i = 0; i < AGENT_NODES.length - 1; i++) {
+      const n1 = AGENT_NODES[i];
+      const n2 = AGENT_NODES[i + 1];
+      ctx.beginPath();
+      ctx.moveTo(n1.x, n1.y);
+      ctx.lineTo(n2.x, n2.y);
+      ctx.stroke();
+    }
+
+    for (let pIdx = activeParticles.length - 1; pIdx >= 0; pIdx--) {
+      const p = activeParticles[pIdx];
+      p.progress += 0.08;
+      const curX = p.x + (p.targetX - p.x) * p.progress;
+      const curY = p.y + (p.targetY - p.y) * p.progress;
+
+      ctx.fillStyle = p.color;
+      ctx.shadowColor = p.color;
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.arc(curX, curY, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      if (p.progress >= 1) {
+        activeParticles.splice(pIdx, 1);
+      }
+    }
+
+    AGENT_NODES.forEach((node) => {
+      ctx.fillStyle = node.color;
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.font = "9px 'JetBrains Mono', monospace";
+      ctx.fillStyle = "#aabbee";
+      ctx.fillText(node.label, node.x - 18, node.y - 10);
+    });
+  }
+
+  requestAnimationFrame(renderTokenCanvases);
+}
+
 // ─── Initialisation ──────────────────────────────────────────────────────────
 
 function init() {
@@ -1124,6 +1299,9 @@ function init() {
 
   // Phase 2: severity filter
   severityFilter.addEventListener("change", handleSeverityFilter);
+
+  // Start Live Token Monitor canvas animation loop
+  renderTokenCanvases();
 }
 
 document.addEventListener("DOMContentLoaded", init);
