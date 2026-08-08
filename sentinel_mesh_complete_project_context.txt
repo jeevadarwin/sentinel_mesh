@@ -1,0 +1,195 @@
+================================================================================
+          SENTINEL MESH: AUTONOMOUS 8-AGENT SOC INTELLIGENCE PLATFORM
+                     COMPLETE ARCHITECTURE & PROJECT CONTEXT
+================================================================================
+
+1. EXECUTIVE SUMMARY & VISION
+--------------------------------------------------------------------------------
+Sentinel Mesh is an enterprise-grade, autonomous multi-agent Security Operations 
+Centre (SOC) intelligence platform. It ingests high-throughput network security 
+alerts (such as Suricata eve.json telemetry), enriches them with real-time threat 
+intelligence, and orchestrates an autonomous 8-Agent Mesh debate to triage 
+incidents, evaluate business risk, predict attacker lateral movement, and execute 
+human-in-the-loop containment.
+
+Key Innovations:
+• Multi-LLM Debate Architecture: Eliminates single-model hallucinations and 
+  confirmation bias by setting up adversarial Threat vs Benign agent stances.
+  Multi-LLM Provider Engine: Supports NVIDIA NIM (Cloud 70B), Google Gemini 
+  (Cloud), and Local Ollama AI (Air-Gap execution for sensitive telemetry).
+• Air-Gapped Privacy & Cost Savings: Computes local model air-gap savings and 
+  tracks token transfer rates in real time.
+• LangGraph Orchestration: State-machine-driven agent pipeline with explicit 
+  structural pauses for human-in-the-loop analyst authorization.
+• Hybrid Deployment: Operates as a full FastAPI/Uvicorn backend system and as 
+  a standalone web demo on Netlify CDN with a built-in fallback stream engine.
+
+
+2. CORE PROBLEM SOLVED
+--------------------------------------------------------------------------------
+1. Alert Fatigue: Modern SOCs receive thousands of raw alerts daily, leading to 
+   missed critical intrusions. Sentinel Mesh automatically correlates, enriches, 
+   and synthesizes alerts into high-confidence verdicts.
+2. Single-Model Bias & Hallucinations: Standard single-prompt AI triage often 
+   hallucinates false positives or misses subtle multi-stage attacks. Sentinel 
+   Mesh uses 8 specialized agents divided into adversarial positions to debate 
+   evidence before reaching consensus.
+3. Air-Gap & Regulatory Compliance: Organizations cannot send sensitive raw IP 
+   logs to public cloud APIs. Sentinel Mesh routes internal logs to local Ollama AI 
+   while leveraging cloud LLMs (NVIDIA NIM / Gemini) for external threat intel.
+4. Operational Containment Risk: Fully autonomous action carries the risk of 
+   accidentally taking down mission-critical production servers. Sentinel Mesh 
+   implements a mandatory Human Approval Gate before executing containment actions.
+
+
+3. SYSTEM ARCHITECTURE & COMPONENT OVERVIEW
+--------------------------------------------------------------------------------
+The platform consists of three primary tiers:
+
+[ FRONTEND TIER ]
+• Technology: HTML5, Vanilla CSS, Vanilla JavaScript (ES6+). Zero heavy 
+  framework overhead for maximum performance and instant loading.
+• UI Design: Modern dark-mode SOC war-room aesthetic featuring 4 dynamic themes 
+  (Cyber, Aesthetic, Pitch Black, Moon White), CSS glassmorphism, responsive grids.
+• Visual Telemetry:
+  - Real-Time Token Transfer Wave Graph: Custom inline SVG vector plotting live 
+    throughput (Tokens/sec) with gradient area fills.
+  - 8-Agent Mesh Topology Telemetry: Interactive 8-box grid tracking per-agent 
+    token consumption with flash animation when agents activate.
+  - Collapsible Top Panel: Smooth CSS collapse/expand toggle for space saving.
+  - Standalone Client-Side Demo Engine: Automatically activates on static hosts 
+    (Netlify) to provide full interactive live streams without a backend server.
+
+[ BACKEND TIER ]
+• Technology: Python 3.10+, FastAPI, Uvicorn ASGI Server, SQLAlchemy ORM.
+• Database: SQLite / PostgreSQL database storing Cases, Agent Messages, 
+  Approval Records, and Containment Logs.
+• WebSocket Trace Engine (ws_trace.py): Asynchronous pub/sub manager broadcasting 
+  live agent reasoning frames to frontend clients in real time without blocking.
+
+[ MULTI-LLM ROUTING TIER ]
+• NVIDIA NIM: 70B parameter cloud model used for complex threat reasoning and 
+  triage analysis.
+• Google Gemini: High-speed cloud model utilized for threat intelligence 
+  reputation synthesis and false-positive defense.
+• Local Ollama AI: Air-gapped local model used for internal network log 
+  correlation and sensitive impact assessment.
+
+
+4. THE 8 SPECIALIZED AGENT MESH DEEP-DIVE
+--------------------------------------------------------------------------------
+All agents inherit from BaseAgent (base_agent.py), which standardizes LLM calls, 
+SQLAlchemy database persistence (AgentMessageRecord), and WebSocket broadcasting.
+
+1. Triage Agent (triage_agent.py)
+   • Role: Inspects raw Suricata alert signatures, ports, protocols, and 
+     initial severity levels.
+   • Output: Assigns urgency level (LOW, MEDIUM, HIGH, CRITICAL) and key findings.
+
+2. Threat Intel Agent (threat_intel_agent.py)
+   • Role: Queries AbuseIPDB and reputation feeds for external source/dest IPs.
+   • Output: Evaluates threat scores (0-100), report counts, and malicious C2 history.
+
+3. Log Correlation Agent (correlation_agent.py)
+   • Role: Analyzes historical event streams and network flow duration.
+   • Output: Identifies attack patterns (C2_BEACONING, PORT_SCAN, LATERAL_MOVEMENT).
+
+4. Threat Agent (threat_agent.py)
+   • Role: Adversarial advocate representing the malicious attack hypothesis.
+   • Output: Builds the case for an active intrusion, malware dropper, or exploit.
+
+5. Benign Agent (benign_agent.py)
+   • Role: Adversarial advocate representing the false-positive / benign hypothesis.
+   • Output: Argues for benign software (e.g., legitimate user-agents, admin scripts).
+
+6. Business Impact Agent (business_impact_agent.py)
+   • Role: Translates technical incident telemetry into executive business metrics.
+   • Output: Calculates financial_risk_estimate ($420K), downtime (4h), 
+     affected_users (1250), and compliance risks (GDPR / PCI-DSS).
+
+7. Prediction Agent (prediction_agent.py)
+   • Role: Forecasts the attacker's next target infrastructure asset using TTP models.
+   • Output: Predicts target asset (e.g., Domain Controller dc-01.internal) and 
+     probability (87%).
+
+8. Containment Agent (containment_agent.py)
+   • Role: Executes host isolation and IP blocking after human approval.
+   • Output: Writes ContainmentActionRecord entries and marks case as RESOLVED.
+
+* Commander Agent / Coordinator (commander_agent.py):
+  Acts as the ensemble lead. Computes confidence deltas between agents to detect 
+  disagreements (conf_delta > 0.25), synthesizes the master verdict 
+  (TRUE_POSITIVE / FALSE_POSITIVE / ESCALATE_TO_HUMAN), and updates Case state.
+
+* Human Approval Agent (human_approval_agent.py):
+  Enforces human-in-the-loop safety. Pauses LangGraph execution at 
+  status='pending_approval' until an analyst submits POST /approval/{case_id}.
+
+
+5. DATABASE SCHEMA & DATA PIPELINE
+--------------------------------------------------------------------------------
+The backend persists all state across four core SQLAlchemy models:
+
+1. Case Model (cases table)
+   • Columns: id, status ('investigating', 'pending_approval', 'approved', 
+     'rejected', 'resolved'), verdict_ai, severity_ai, confidence_ai, 
+     disagreement_detected, financial_risk_estimate, estimated_downtime, 
+     affected_users_count, compliance_risk, business_risk_score, 
+     next_target_prediction, prediction_probability, created_at, updated_at.
+
+2. AgentMessageRecord Model (agent_message_records table)
+   • Columns: id, case_id, source_agent, finding_type, confidence_score, 
+     evidence (JSON array), reasoning, timestamp.
+
+3. ApprovalRecord Model (approval_records table)
+   • Columns: id, case_id, decision ('approve' / 'reject'), decided_by, 
+     decided_at.
+
+4. ContainmentActionRecord Model (containment_action_records table)
+   • Columns: id, case_id, action_type ('BLOCK_IP' / 'ISOLATE_HOST'), target, 
+     status ('EXECUTED'), executed_at.
+
+
+6. FRONTEND VISUALIZATIONS & STYLING SYSTEM
+--------------------------------------------------------------------------------
+1. Theme System (4 Themes):
+   Controlled via data-theme attribute on <body>:
+   • Cyber: Neon cyan/amber accents with deep navy background.
+   • Aesthetic: Purple/violet glassmorphism theme.
+   • Pitch Black: High-contrast pure dark mode for OLED displays.
+   • Moon White: High-contrast clean light mode for daytime operations.
+
+2. Real-Time SVG Token Wave Graph:
+   Dynamic inline <svg> with linear gradient fill (#cyan-grad) and smooth 
+   <polyline> updating token throughput (Tokens/sec) over a rolling 20-point 
+   window. Automatically pulses every 1.2 seconds.
+
+3. 8-Agent Mesh Particle Grid:
+   4x2 grid of agent nodes displaying live token counters per agent. Flashes with 
+   glowing neon borders (active-flash class) whenever an agent outputs findings.
+
+4. Standalone Client Demo Engine:
+   When running on Netlify or when the local backend server is offline, app.js 
+   engages an inline demo stream engine. It generates synthetic live Suricata 
+   alerts, simulates 8-Agent Mesh debate steps with 600ms delays, and renders 
+   threat intelligence evidence seamlessly in the browser.
+
+
+7. DEPLOYMENT TOPOLOGY
+--------------------------------------------------------------------------------
+• Live Static Web Host: Netlify CDN
+  URL: https://sentinel-mesh-app.netlify.app
+  Role: Serves optimized static HTML, CSS, JS, SVG assets, and Standalone Demo Engine.
+
+• Backend Container Host: Docker / FastAPI Uvicorn
+  Port: 8001 (Local Dev) / Docker Container (Production)
+  Role: Serves REST endpoints (/alerts, /approval, /providers/health) and 
+  WebSocket endpoints (/ws/trace/{case_id}).
+
+• Git Repositories:
+  - Primary: https://github.com/developerHarish2007/sentry_defender (branch: sentinel_mesh)
+  - Team Repo: https://github.com/jeevadarwin/sentinel_mesh (branch: main)
+
+================================================================================
+                             END OF FILE CONTEXT
+================================================================================

@@ -36,3 +36,6 @@ desktop.ini
 
 # Test artifacts
 test_scenarios.py
+
+# Local Netlify folder
+.netlify
