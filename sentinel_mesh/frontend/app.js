@@ -1260,6 +1260,25 @@ function init() {
   // Phase 2: severity filter
   severityFilter.addEventListener("change", handleSeverityFilter);
 
+  // Panel Collapse Toggle
+  const btnTogglePanel = document.getElementById("btn-toggle-token-panel");
+  const tokenMonitorBody = document.getElementById("token-monitor-body");
+  if (btnTogglePanel && tokenMonitorBody) {
+    btnTogglePanel.addEventListener("click", () => {
+      const isHidden = tokenMonitorBody.style.display === "none";
+      tokenMonitorBody.style.display = isHidden ? "block" : "none";
+      btnTogglePanel.textContent = isHidden ? "▼ Hide" : "▶ Show";
+    });
+  }
+
+  // Theme System Selector (Cyber, Aesthetic, Pitch Black, Moon White)
+  const themeSelector = document.getElementById("theme-selector");
+  if (themeSelector) {
+    themeSelector.addEventListener("change", (e) => {
+      document.body.setAttribute("data-theme", e.target.value);
+    });
+  }
+
   // Initial SVG Token Chart Render + 1.5s background pulse
   renderSvgTokenChart();
   setInterval(() => {

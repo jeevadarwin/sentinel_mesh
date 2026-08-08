@@ -15,20 +15,75 @@
 /* 1. DESIGN TOKENS (CSS custom properties)                                    */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
-:root {
-  /* Colour palette — Professional Dark Mode SOC Theme (Linear / CyFocus) */
-  --colour-bg:          #0b0f17;     /* near-black surface */
-  --colour-surface:     #0e1420;     /* panel surface */
-  --colour-surface-alt: #131b2a;     /* card surface */
-  --colour-border:      #1a2232;     /* subtle border */
-  --colour-accent:      #00e5ff;     /* electric cyan — single primary interactive accent */
-  --colour-accent-dim:  #00b8cc;     /* dimmed cyan hover */
-  --colour-text:        #e2e8f0;     /* primary text */
-  --colour-text-muted:  #64748b;     /* muted label text */
-  --colour-success:     #00e676;     /* status: healthy / active */
-  --colour-error:       #ff3b30;     /* status: critical alert */
-  --colour-warning:     #ff9500;     /* status: warning */
+:root, body[data-theme="cyber"] {
+  /* Theme 1: Cyber (Refined dark SOC look, cyan accent) */
+  --colour-bg:          #0b0f17;
+  --colour-surface:     #0e1420;
+  --colour-surface-alt: #131b2a;
+  --colour-border:      #1a2232;
+  --colour-accent:      #00e5ff;
+  --colour-accent-dim:  #00b8cc;
+  --colour-text:        #e2e8f0;
+  --colour-text-muted:  #64748b;
+  --colour-success:     #00e676;
+  --colour-error:       #ff3b30;
+  --colour-warning:     #ff9500;
+  --pill-bg:            #121824;
+  --pill-border:        #1e293b;
+}
 
+/* Theme 2: Aesthetic (Softer muted slate, warm text, dusty violet accent) */
+body[data-theme="aesthetic"] {
+  --colour-bg:          #12161f;
+  --colour-surface:     #18202c;
+  --colour-surface-alt: #1f2937;
+  --colour-border:      #2d3748;
+  --colour-accent:      #a855f7;
+  --colour-accent-dim:  #9333ea;
+  --colour-text:        #f1f5f9;
+  --colour-text-muted:  #94a3b8;
+  --colour-success:     #10b981;
+  --colour-error:       #ef4444;
+  --colour-warning:     #f59e0b;
+  --pill-bg:            #1a2332;
+  --pill-border:        #334155;
+}
+
+/* Theme 3: Pitch Black (Ultra near-black minimalism, electric sky-blue accent) */
+body[data-theme="pitch-black"] {
+  --colour-bg:          #08080a;
+  --colour-surface:     #0d0d10;
+  --colour-surface-alt: #141418;
+  --colour-border:      #222228;
+  --colour-accent:      #38bdf8;
+  --colour-accent-dim:  #0284c7;
+  --colour-text:        #f8fafc;
+  --colour-text-muted:  #71717a;
+  --colour-success:     #22c55e;
+  --colour-error:       #f43f5e;
+  --colour-warning:     #eab308;
+  --pill-bg:            #121216;
+  --pill-border:        #27272a;
+}
+
+/* Theme 4: Moon White (Light theme, soft gray background, high-contrast dark text) */
+body[data-theme="moon-white"] {
+  --colour-bg:          #f1f5f9;
+  --colour-surface:     #ffffff;
+  --colour-surface-alt: #f8fafc;
+  --colour-border:      #cbd5e1;
+  --colour-accent:      #2563eb;
+  --colour-accent-dim:  #1d4ed8;
+  --colour-text:        #0f172a;
+  --colour-text-muted:  #475569;
+  --colour-success:     #15803d;
+  --colour-error:       #b91c1c;
+  --colour-warning:     #b45309;
+  --pill-bg:            #ffffff;
+  --pill-border:        #cbd5e1;
+}
+
+:root {
   /* Typography */
   --font-ui:    'Inter', system-ui, sans-serif;
   --font-mono:  'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace;
@@ -127,11 +182,52 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #121824;
-  border: 1px solid #1e293b;
+  background: var(--pill-bg);
+  border: 1px solid var(--pill-border);
   border-radius: 20px;
   padding: 3px 8px;
   margin-left: auto;
+}
+
+.theme-select {
+  background: var(--pill-bg);
+  border: 1px solid var(--pill-border);
+  color: var(--colour-text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 14px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.theme-select:hover {
+  border-color: var(--colour-accent);
+}
+
+.theme-select option {
+  background: var(--colour-surface);
+  color: var(--colour-text);
+}
+
+.btn-toggle-panel {
+  background: var(--colour-surface-alt);
+  border: 1px solid var(--colour-border);
+  color: var(--colour-text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-toggle-panel:hover {
+  color: var(--colour-accent);
+  border-color: var(--colour-accent);
 }
 
 .provider-pill {

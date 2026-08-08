@@ -65,6 +65,14 @@
         <span class="conn-label" id="conn-label">Connecting…</span>
       </div>
 
+      <!-- Theme Selector Dropdown (4 Themes) -->
+      <select id="theme-selector" class="theme-select" aria-label="Select Theme">
+        <option value="cyber">Theme: Cyber</option>
+        <option value="aesthetic">Theme: Aesthetic</option>
+        <option value="pitch-black">Theme: Pitch Black</option>
+        <option value="moon-white">Theme: Moon White</option>
+      </select>
+
       <!-- Provider Status Indicators (NVIDIA NIM, Google Gemini, Local AI) -->
       <div class="provider-status-container" id="provider-status" title="LLM Provider Failover Matrix">
         <span class="provider-pill" id="prov-nim"><span class="prov-dot" id="dot-nim"></span>NVIDIA NIM</span>
@@ -121,114 +129,119 @@
             <span class="token-pulse-dot"></span>
             ⚡ LIVE AI TOKEN TRANSFER & MESH INTELLIGENCE MONITOR
           </div>
-          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--colour-accent);">
-            STREAM: <span id="token-stream-status">ACTIVE SSE STREAM</span>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="font-family: var(--font-mono); font-size: 11px; color: var(--colour-accent);">
+              STREAM: <span id="token-stream-status">ACTIVE SSE STREAM</span>
+            </div>
+            <button id="btn-toggle-token-panel" class="btn-toggle-panel" title="Toggle Panel View">▼ Hide</button>
           </div>
         </div>
 
-        <div class="token-kpi-grid">
-          <div class="token-kpi-box">
-            <span class="token-kpi-val highlight" id="token-kpi-total">0</span>
-            <span class="token-kpi-lbl">Total Tokens</span>
-          </div>
-          <div class="token-kpi-box">
-            <span class="token-kpi-val" id="token-kpi-prompt">0</span>
-            <span class="token-kpi-lbl">Prompt Input</span>
-          </div>
-          <div class="token-kpi-box">
-            <span class="token-kpi-val" id="token-kpi-completion">0</span>
-            <span class="token-kpi-lbl">LLM Output</span>
-          </div>
-          <div class="token-kpi-box">
-            <span class="token-kpi-val highlight" id="token-kpi-rate">0 t/s</span>
-            <span class="token-kpi-lbl">Throughput</span>
-          </div>
-          <div class="token-kpi-box">
-            <span class="token-kpi-val success" id="token-kpi-saved">$0.00</span>
-            <span class="token-kpi-lbl">Air-Gap Saved</span>
-          </div>
-        </div>
-
-        <div class="token-canvas-wrapper">
-          <div class="token-canvas-box">
-            <div class="token-canvas-title">
-              <span>📊 Real-Time Token Transfer Chart</span>
-              <span style="color: var(--colour-accent);">Tokens / Sec</span>
+        <div id="token-monitor-body" class="token-monitor-body">
+          <div class="token-kpi-grid">
+            <div class="token-kpi-box">
+              <span class="token-kpi-val highlight" id="token-kpi-total">0</span>
+              <span class="token-kpi-lbl">Total Tokens</span>
             </div>
-            <div class="svg-chart-container">
-              <svg id="token-wave-svg" viewBox="0 0 360 70" preserveAspectRatio="none" style="width:100%; height:70px; display:block;">
-                <defs>
-                  <linearGradient id="cyan-grad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.35"/>
-                    <stop offset="100%" stop-color="#00e5ff" stop-opacity="0.0"/>
-                  </linearGradient>
-                </defs>
-                <!-- Background Grid Lines -->
-                <line x1="0" y1="18" x2="360" y2="18" stroke="rgba(255,255,255,0.06)" stroke-dasharray="2,2"/>
-                <line x1="0" y1="36" x2="360" y2="36" stroke="rgba(255,255,255,0.06)" stroke-dasharray="2,2"/>
-                <line x1="0" y1="54" x2="360" y2="54" stroke="rgba(255,255,255,0.06)" stroke-dasharray="2,2"/>
-                
-                <!-- Area Fill & Polyline -->
-                <path id="svg-fill-path" fill="url(#cyan-grad)" d="M0,70 L0,50 L360,50 L360,70 Z"/>
-                <polyline id="svg-line-path" fill="none" stroke="#00e5ff" stroke-width="2.5" points="0,50 360,50"/>
-              </svg>
+            <div class="token-kpi-box">
+              <span class="token-kpi-val" id="token-kpi-prompt">0</span>
+              <span class="token-kpi-lbl">Prompt Input</span>
+            </div>
+            <div class="token-kpi-box">
+              <span class="token-kpi-val" id="token-kpi-completion">0</span>
+              <span class="token-kpi-lbl">LLM Output</span>
+            </div>
+            <div class="token-kpi-box">
+              <span class="token-kpi-val highlight" id="token-kpi-rate">0 t/s</span>
+              <span class="token-kpi-lbl">Throughput</span>
+            </div>
+            <div class="token-kpi-box">
+              <span class="token-kpi-val success" id="token-kpi-saved">$0.00</span>
+              <span class="token-kpi-lbl">Air-Gap Saved</span>
             </div>
           </div>
 
-          <div class="token-canvas-box">
-            <div class="token-canvas-title">
-              <span>🌐 8-Agent Mesh Topology Telemetry</span>
-              <span style="color: #00e676;">Active Agents</span>
+          <div class="token-canvas-wrapper">
+            <div class="token-canvas-box">
+              <div class="token-canvas-title">
+                <span>📊 Real-Time Token Transfer Chart</span>
+                <span style="color: var(--colour-accent);">Tokens / Sec</span>
+              </div>
+              <div class="svg-chart-container">
+                <svg id="token-wave-svg" viewBox="0 0 360 70" preserveAspectRatio="none" style="width:100%; height:70px; display:block;">
+                  <defs>
+                    <linearGradient id="cyan-grad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.35"/>
+                      <stop offset="100%" stop-color="#00e5ff" stop-opacity="0.0"/>
+                    </linearGradient>
+                  </defs>
+                  <!-- Background Grid Lines -->
+                  <line x1="0" y1="18" x2="360" y2="18" stroke="rgba(255,255,255,0.06)" stroke-dasharray="2,2"/>
+                  <line x1="0" y1="36" x2="360" y2="36" stroke="rgba(255,255,255,0.06)" stroke-dasharray="2,2"/>
+                  <line x1="0" y1="54" x2="360" y2="54" stroke="rgba(255,255,255,0.06)" stroke-dasharray="2,2"/>
+                  
+                  <!-- Area Fill & Polyline -->
+                  <path id="svg-fill-path" fill="url(#cyan-grad)" d="M0,70 L0,50 L360,50 L360,70 Z"/>
+                  <polyline id="svg-line-path" fill="none" stroke="#00e5ff" stroke-width="2.5" points="0,50 360,50"/>
+                </svg>
+              </div>
             </div>
-            <div class="agent-mesh-grid" id="agent-mesh-grid">
-              <div class="agent-node-box" id="node-triage" style="--node-color: #ffb703;">
-                <span class="node-icon">🔍</span>
-                <span class="node-name">Triage</span>
-                <span class="node-tokens" id="node-tok-triage">0t</span>
+
+            <div class="token-canvas-box">
+              <div class="token-canvas-title">
+                <span>🌐 8-Agent Mesh Topology Telemetry</span>
+                <span style="color: #00e676;">Active Agents</span>
               </div>
-              <div class="agent-node-box" id="node-threat_intel" style="--node-color: #69f0ae;">
-                <span class="node-icon">🌐</span>
-                <span class="node-name">Intel</span>
-                <span class="node-tokens" id="node-tok-intel">0t</span>
-              </div>
-              <div class="agent-node-box" id="node-correlation" style="--node-color: #00e5ff;">
-                <span class="node-icon">📊</span>
-                <span class="node-name">Correlation</span>
-                <span class="node-tokens" id="node-tok-correlation">0t</span>
-              </div>
-              <div class="agent-node-box" id="node-threat" style="--node-color: #ff5252;">
-                <span class="node-icon">⚡</span>
-                <span class="node-name">Threat</span>
-                <span class="node-tokens" id="node-tok-threat">0t</span>
-              </div>
-              <div class="agent-node-box" id="node-benign" style="--node-color: #00e676;">
-                <span class="node-icon">🛡️</span>
-                <span class="node-name">Benign</span>
-                <span class="node-tokens" id="node-tok-benign">0t</span>
-              </div>
-              <div class="agent-node-box" id="node-business_impact" style="--node-color: #ffab00;">
-                <span class="node-icon">💼</span>
-                <span class="node-name">Impact</span>
-                <span class="node-tokens" id="node-tok-impact">0t</span>
-              </div>
-              <div class="agent-node-box" id="node-containment" style="--node-color: #e040fb;">
-                <span class="node-icon">🚨</span>
-                <span class="node-name">Response</span>
-                <span class="node-tokens" id="node-tok-containment">0t</span>
-              </div>
-              <div class="agent-node-box" id="node-coordinator" style="--node-color: #ffd700;">
-                <span class="node-icon">⚖️</span>
-                <span class="node-name">Coordinator</span>
-                <span class="node-tokens" id="node-tok-coordinator">0t</span>
+              <div class="agent-mesh-grid" id="agent-mesh-grid">
+                <div class="agent-node-box" id="node-triage" style="--node-color: #ffb703;">
+                  <span class="node-icon">🔍</span>
+                  <span class="node-name">Triage</span>
+                  <span class="node-tokens" id="node-tok-triage">0t</span>
+                </div>
+                <div class="agent-node-box" id="node-threat_intel" style="--node-color: #69f0ae;">
+                  <span class="node-icon">🌐</span>
+                  <span class="node-name">Intel</span>
+                  <span class="node-tokens" id="node-tok-intel">0t</span>
+                </div>
+                <div class="agent-node-box" id="node-correlation" style="--node-color: #00e5ff;">
+                  <span class="node-icon">📊</span>
+                  <span class="node-name">Correlation</span>
+                  <span class="node-tokens" id="node-tok-correlation">0t</span>
+                </div>
+                <div class="agent-node-box" id="node-threat" style="--node-color: #ff5252;">
+                  <span class="node-icon">⚡</span>
+                  <span class="node-name">Threat</span>
+                  <span class="node-tokens" id="node-tok-threat">0t</span>
+                </div>
+                <div class="agent-node-box" id="node-benign" style="--node-color: #00e676;">
+                  <span class="node-icon">🛡️</span>
+                  <span class="node-name">Benign</span>
+                  <span class="node-tokens" id="node-tok-benign">0t</span>
+                </div>
+                <div class="agent-node-box" id="node-business_impact" style="--node-color: #ffab00;">
+                  <span class="node-icon">💼</span>
+                  <span class="node-name">Impact</span>
+                  <span class="node-tokens" id="node-tok-impact">0t</span>
+                </div>
+                <div class="agent-node-box" id="node-containment" style="--node-color: #e040fb;">
+                  <span class="node-icon">🚨</span>
+                  <span class="node-name">Response</span>
+                  <span class="node-tokens" id="node-tok-containment">0t</span>
+                </div>
+                <div class="agent-node-box" id="node-coordinator" style="--node-color: #ffd700;">
+                  <span class="node-icon">⚖️</span>
+                  <span class="node-name">Coordinator</span>
+                  <span class="node-tokens" id="node-tok-coordinator">0t</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="token-stream-console" id="token-stream-console">
-          <div class="token-log-entry">
-            <span class="token-log-time">[00:00:00]</span>
-            <span>Awaiting live alert debate streaming... Token transfer telemetry ready.</span>
+          <div class="token-stream-console" id="token-stream-console">
+            <div class="token-log-entry">
+              <span class="token-log-time">[00:00:00]</span>
+              <span>Awaiting live alert debate streaming... Token transfer telemetry ready.</span>
+            </div>
           </div>
         </div>
       </div>
