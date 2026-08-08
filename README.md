@@ -1,77 +1,93 @@
-# SENTRY — Explainable Security Gateway
+# 🛡️ Sentinel Mesh — Autonomous 8-Agent SOC Intelligence Platform
 
-SENTRY intercepts every tool call an AI agent wants to make, evaluates it
-for safety, and explains its decision in plain English — before anything
-irreversible happens.
+> **Live Deployment**: **[https://sentinel-mesh-app.netlify.app](https://sentinel-mesh-app.netlify.app)**  
+> **Repository**: [https://github.com/developerHarish2007/sentinel_mesh](https://github.com/developerHarish2007/sentinel_mesh)
 
-## Quick Start (Windows)
+Sentinel Mesh is an enterprise-grade, autonomous multi-agent Security Operations Centre (SOC) platform designed to eliminate alert fatigue, stop single-model AI hallucinations, and execute human-gated threat containment.
 
-### Prerequisites
+---
 
-- **Python 3.9+** — download from [python.org](https://www.python.org/downloads/)
-  (make sure "Add Python to PATH" is checked during install)
+## 🚀 Key Features & Innovations
 
-### 1. Install dependencies
+- **Multi-LLM Debate Architecture**: Eliminates single-model bias by setting up adversarial Threat-side vs. Benign-side agent stances.
+- **8-Agent Specialized Mesh**:
+  1. 🔍 **Triage Agent**: Inspects raw Suricata alert signatures, ports, and protocols.
+  2. 🌐 **Threat Intel Agent**: Queries AbuseIPDB & reputation feeds for IP risk scoring.
+  3. 📊 **Log Correlation Agent**: Detects C2 beaconing and multi-flow telemetry patterns.
+  4. ⚡ **Threat Agent**: Builds adversarial malicious attack hypotheses.
+  5. 🛡️ **Benign Agent**: Defends false-positive / legitimate software hypotheses.
+  6. 💼 **Business Impact Agent**: Computes financial risk ($420K), downtime, user impact, and GDPR compliance risks.
+  7. 🔮 **Prediction Agent**: Forecasts attacker next-target assets (Domain Controller) with probability scores.
+  8. 🚨 **Containment Agent**: Writes host isolation and IP blocking records post-approval.
+  - ⚖️ **Commander Agent**: Evaluates specialist confidence deltas (`conf_delta > 0.25`), resolves disagreement, and issues master verdicts.
+  - 🛑 **Human Approval Agent**: Structural LangGraph gate pausing execution at `pending_approval`.
+- **Air-Gapped Local Model Privacy**: Routes sensitive internal logs to Local Ollama AI while using NVIDIA NIM (Cloud 70B) & Google Gemini for public threat intel.
+- **Real-Time Visual Telemetry**:
+  - **Live SVG Token Transfer Chart**: Real-time vector wave graph plotting throughput (Tokens/sec).
+  - **8-Agent Mesh Topology Grid**: Live pulse flashing tracking per-agent token transfers.
+  - **4-Theme Styling System**: Cyber, Aesthetic, Pitch Black, and Moon White.
+- **Standalone Web Demo Engine**: Embedded client-side fallback engine enabling full interactive live streams directly on static cloud hosts (Netlify).
 
-Open PowerShell or Command Prompt and run:
+---
 
-```
-cd path\to\hackathon_project
-pip install -r backend\requirements.txt
-```
+## 📊 Phase Status Matrix
 
-### 2. Start the server
+| Phase | Status | Feature Highlight |
+|-------|--------|-------------------|
+| **Phase 1 — Foundation** | ✅ Complete | FastAPI backend, Typed schema validation, Multi-LLM provider abstraction |
+| **Phase 2 — Alert Ingestion** | ✅ Complete | Suricata eve.json normalization, SSE streaming, live feed replay |
+| **Phase 3 — Enrichment** | ✅ Complete | AbuseIPDB threat intelligence, private IP RFC1918 filtering, cache |
+| **Phase 4 — Agent Engine** | ✅ Complete | 8-Agent Mesh, LangGraph state machine, Commander debate synthesis |
+| **Phase 5 — Dashboard & Telemetry** | ✅ Complete | SVG token wave graph, 4-theme system, Netlify cloud deployment |
 
-```
-python backend\main.py
-```
+---
 
-You should see:
-
-```
-  ╔══════════════════════════════════════════════╗
-  ║  SENTRY — Explainable Security Gateway       ║
-  ╠══════════════════════════════════════════════╣
-  ║  Dashboard:  http://127.0.0.1:8000           ║
-  ║  API docs:   http://127.0.0.1:8000/docs      ║
-  ║  Press Ctrl+C to stop.                       ║
-  ╚══════════════════════════════════════════════╝
-```
-
-### 3. Open the dashboard
-
-Go to **http://127.0.0.1:8000** in your browser.
-
-### 4. Explore the API
-
-FastAPI auto-generates interactive API docs at **http://127.0.0.1:8000/docs**
-where you can try every endpoint.
-
-## Project Structure
+## 🛠️ Architecture
 
 ```
-hackathon_project/
+sentinel_mesh/
 ├── backend/
-│   ├── main.py               # FastAPI app — starts server, mounts routes
-│   ├── models.py             # Pydantic data shapes (request/response)
-│   ├── audit_log.py          # In-memory audit trail
-│   ├── fake_environment.py   # Fake files, emails, downloads (no real I/O)
-│   └── requirements.txt      # Python dependencies
+│   ├── app/
+│   │   ├── agents/          — 8 Specialized Agents + BaseAgent + Commander
+│   │   ├── api/             — REST Routes (/alerts, /approval, /providers) + /ws/trace WebSocket
+│   │   ├── db/              — SQLAlchemy Session & Models (Case, AgentMessageRecord, etc.)
+│   │   ├── llm/             — Fault-tolerant LLM router (NIM, Gemini, Ollama)
+│   │   ├── orchestrator/    — LangGraph StateGraph pipeline execution
+│   │   └── main.py          — FastAPI Application entrypoint
 ├── frontend/
-│   ├── index.html            # Dashboard page
-│   ├── style.css             # Dark theme styling
-│   └── app.js                # Panel rendering & API calls
-└── README.md                 # This file
+│   ├── index.html           — Main SOC Dashboard + Standalone Demo Engine
+│   ├── styles.css           — Vanilla CSS design system (4 themes: Cyber, Aesthetic, Pitch Black, Moon White)
+│   └── app.js               — Live SSE, WebSocket client, SVG token telemetry & fallback engine
+└── sentinel_mesh_complete_project_context.txt — Full technical context documentation
 ```
 
-## Safety Note
+---
 
-All actions are **simulated**. SENTRY's demo environment uses in-memory
-fake files, fake emails, and fake download URLs. No real files are read,
-deleted, or emailed. "Deleted" files are moved to an in-memory quarantine
-folder — never actually removed.
+## 🚦 Quickstart (Local Development)
 
-## Current Phase
+### 1. Backend Setup
+```bash
+cd sentinel_mesh/backend
+python -m venv .venv
+# Windows:
+.venv\Scripts\activate
+# macOS/Linux:
+source .venv/bin/activate
 
-- **Phase 1** ✅ Server running, dashboard visible, fake data in memory
-- **Phase 2** 🔲 Decision engine, content scanner, working demo scenarios
+pip install -r requirements.txt
+uvicorn app.main:app --port 8001
+```
+*API Swagger Docs*: `http://localhost:8001/docs`
+
+### 2. Frontend Setup
+```bash
+python -m http.server 3000 --directory sentinel_mesh/frontend
+```
+*Frontend URL*: `http://localhost:3000`
+
+---
+
+## ☁️ Live Cloud Demo
+
+View the live interactive application directly in your browser:  
+🔗 **[https://sentinel-mesh-app.netlify.app](https://sentinel-mesh-app.netlify.app)**
